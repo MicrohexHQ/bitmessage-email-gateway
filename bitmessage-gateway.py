@@ -438,8 +438,8 @@ def check_bminbox(intcond):
 						template = "accountexpired",
 						addmaps = {
 							'btcuri': lib.payment.create_payment_uri(btcaddress, 'BTC', amount,
-								'Mailchuck Ltd', 'User ' + userdata.bm + " / " + userdata.email + ' subscription'),
-				                        'service': 'Subscription for gpgtest@mailchuck.com from ' + datetime.date.today().strftime("%B %-d %Y") +
+								BMConfig().get("bmgateway", "bmgateway", "companyname"), 'User ' + userdata.bm + " / " + userdata.email + ' subscription'),
+				                        'service': 'Subscription for ' + userdata.email + ' from ' + datetime.date.today().strftime("%B %-d %Y") +
 								' until ' + userdata.exp.strftime("%B %-d %Y"),
 							'email': userdata.email
 						})
