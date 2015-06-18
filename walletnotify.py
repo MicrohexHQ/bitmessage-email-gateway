@@ -7,18 +7,12 @@ import hashlib
 import datetime
 import decimal
 
-send_receipt = False
-
-try:
-	from lib.config import BMConfig
-	from lib.mysql import BMMySQL
-	from lib.bmlogging import BMLogging
-	from lib.user import GWUser
-	from lib.bmapi import BMAPI
-	from lib.sendbm import SendBMTemplate
-	send_receipt = True
-except:
-	pass
+from lib.config import BMConfig
+from lib.mysql import BMMySQL
+from lib.bmlogging import BMLogging
+from lib.user import GWUser
+from lib.bmapi import BMAPI
+from lib.sendbm import SendBMTemplate
 
 from warnings import filterwarnings
 
@@ -63,15 +57,12 @@ client = jsonrpclib.Server('http://' + cfg['rpcuser'] + ":" + cfg['rpcpassword']
 
 txinfo = client.gettransaction(txid, True)
 
-if send_receipt:
-	BMLogging()
-	BMMySQL().connect()
-	while BMAPI().conn() is False:
-		print "Failure connecting to API, sleeping..."
-		time.sleep(random.random()+0.5)
-else:
-	db =  MySQLdb.connect(unix_socket = '/var/run/mysqld/mysqld.sock', user = 'user', passwd = 'passwd', db = 'db')
-	cur = db.cursor(MySQLdb.cursors.DictCursor)
+BMLogging()
+BMMySQL().connect()
+cur = BMMySQL().db.cursor(MySQLdb.cursors.DictCursor)
+while BMAPI().conn() is False:
+	print "Failure connecting to API, sleeping..."
+	time.sleep(random.random()+0.5)
 
 filterwarnings('ignore', category = MySQLdb.Warning)
 
@@ -103,7 +94,7 @@ for detail in txinfo['details']:
 						months = incomingamount / invoice['amount']
 					print "Extending for " + str(months) + " months"
 					userdata = GWUser(bm = invoice['payer'])
-					datefrom = userdata.exp
+					datefrom = userdata.exp if userdata.exp > datetime.date.today() else datetime.date.today()
 					cur.execute ("UPDATE user SET cansend = 1, exp = IF(exp < CURDATE(),DATE_ADD(CURDATE(), INTERVAL " +
 						str(months) + " MONTH),DATE_ADD(exp, INTERVAL " + str(months) +
 						" MONTH)) WHERE bm = %s", invoice['payer']);
