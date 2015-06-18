@@ -1,0 +1,8 @@
+Subject: Invalid command
+
+The command you specified, ${command}, is not valid.
+
+Valid commands are:
+status
+
+${timestamp}

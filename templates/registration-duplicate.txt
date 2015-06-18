@@ -1,0 +1,5 @@
+Subject: Registration Request Denied
+
+Your registration request for email address ${email} was denied because the username is reserved, already in use, or you have already registered an address!
+
+${timestamp}

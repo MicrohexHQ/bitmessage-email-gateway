@@ -1,0 +1,6 @@
+Subject: Message throttling engaged
+
+You seem to be sending messages too quickly. As a precaution message throttling was engaged.
+Please wait ${throttledelta} more minutes.
+
+${timestamp}

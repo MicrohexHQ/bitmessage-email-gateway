@@ -1,0 +1,16 @@
+Subject: ${companyname} invoice / receipt
+
+Thank you for your payment. This message serves as an invoice and a receipt.
+
+${companyname}
+${companyaddress}
+
+${timestamp}
+
+Service provided:
+${service}
+
+Amount paid:
+${btcamount} bitcoins
+
+Have a nice day.

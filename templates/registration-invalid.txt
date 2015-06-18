@@ -1,0 +1,7 @@
+Subject: Registration Request Denied
+
+Your registration request for email address ${email} was denied because the submitted username format is invalid.
+
+Please register an alpha-numeric only username with a length of 4-20 characters. We will add the ${domain} suffix if necessary.
+
+${timestamp}

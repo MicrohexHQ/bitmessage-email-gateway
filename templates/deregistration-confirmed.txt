@@ -1,0 +1,5 @@
+Subject: Deregistration Request Processed
+
+Thank you for your deregistration request for ${email}. Your account has now been removed. Bon voyage!
+
+${timestamp}

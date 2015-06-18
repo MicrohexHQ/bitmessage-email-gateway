@@ -1,0 +1,6 @@
+Subject: Relay missing recipient
+
+I would really love to relay your message, however the recipient appears to be missing.
+Please specify the recipient email address in the subject of the message.
+
+${timestamp}

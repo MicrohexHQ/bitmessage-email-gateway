@@ -1,0 +1,19 @@
+Subject: Registration Request Accepted
+
+Thank you for your registration request for ${email}. Your account is now set up and ready to use!
+
+*** Sending Emails ***
+To send emails to the Internet, send a bitmessage to ${relayaddress} with the destination email address in the subject line.
+
+*** Unregistering Your Account ***
+To unregister, simply send a message from this address to ${deregisteraddress}.
+
+*** ${domain} Addresses to Trust (Add to Address Book) ***
+Registration Address:       ${registeraddress}
+Deregistration Address:     ${deregisteraddress}
+Relay Address:              ${relayaddress}
+
+*** Reporting Bugs ***
+This service is still in Beta! Please send any comments/bug reports to ${bugreportemail} or send us a bitmessage at ${bugreportaddress}.
+
+${timestamp}

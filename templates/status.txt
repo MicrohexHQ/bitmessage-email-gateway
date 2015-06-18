@@ -1,0 +1,19 @@
+Subject: Account status report
+
+Bitmessage Address:       ${recipient}
+Email address:            ${email}
+Domain:                   ${domain}
+Active:                   ${active}
+Can send emails:          ${cansend}
+Can charge for emails:    ${cancharge}
+Can send invoices:        ${caninvoice}
+PGP:                      ${pgp}
+Attachments:              ${attachments}
+Expires:                  ${expires}
+Master public key bitcoin ${masterpubkey_btc}
+Offset public key bitcoin ${offset_btc}
+Incoming mail fee         ${feeamount} ${feecurrency}
+Archiving emails          ${archive}
+Flags                     ${flags}
+
+${timestamp}
