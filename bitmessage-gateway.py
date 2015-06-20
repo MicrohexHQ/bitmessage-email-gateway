@@ -387,7 +387,7 @@ def check_bminbox(intcond):
 							})
 						BMMessage.deleteStatic(bm_id)
 						continue
-					elif lib.user.GWUSer(email = full_registration_user).check():
+					elif lib.user.GWUser(email = full_registration_user).check():
 						logging.info('Duplicate email address in registration request for %s', registration_user)
 						SendBMTemplate(
 							sender = BMAPI().get_address(BMConfig().get("bmgateway", "bmgateway", "registration_address_label")),
