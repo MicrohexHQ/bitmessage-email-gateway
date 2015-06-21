@@ -190,7 +190,7 @@ def send_email(recipient, sender, subject, body, bm_id):
 
 	## send message
 	try:
-		status = server.sendmail(sender, receiver, text, [], ["NOTIFY=SUCCESS,FAILURE,DELAY", "ORCPT=rfc822;" + recipient])
+		status = server.sendmail(sender, recipient, text, [], ["NOTIFY=SUCCESS,FAILURE,DELAY", "ORCPT=rfc822;" + recipient])
    		logging.info('Sent email from %s to %s', sender, recipient) 
 		BMMessage.deleteStatic(bm_id, folder = "inbox")
 	## send failed
@@ -408,7 +408,7 @@ def check_bminbox(intcond):
 							addmaps = {
 								'email': full_registration_user
 							})
-			## if sent to the generic receiver or sender address
+			## if sent to the generic recipient or sender address
 			elif field_in_list(message, BMAPI().address_list,
 				'toAddress', 'relay_address_label'):
 	
