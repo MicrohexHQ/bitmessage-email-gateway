@@ -171,7 +171,7 @@ def send_email(receiver, sender, subject, body, bm_id):
 	elif recipient_key:
 		enc_body = lib.gpg.encrypt_text(body, recipient_key)
 		logging.info('Encrypted outbound mail from ' + sender + ' to ' + receiver)
-	elif sender_key:
+	elif sender_key and not sender == BMConfig().get("bmgateway", "bmgateway", "bug_report_address_email"):
 		logging.info('Signed outbound mail from ' + sender + ' to ' + receiver)
 		enc_body = lib.gpg.sign_text(body, sender_key)
 
