@@ -425,29 +425,7 @@ def check_bminbox(intcond):
 				## if user is registered, find their username @ domain
 				else:
 					bm_sender = userdata.email
-	
-				if userdata.exp < datetime.date.today() or userdata.cansend == 0:
-					btcaddress, amount = lib.payment.payment_exists_domain (BMConfig().get("bmgateway", "bmgateway", "domain_name"), userdata.bm)
-				        # create new one
-       					if btcaddress == False:
-                				btcaddress, amount = lib.payment.create_invoice_domain (BMConfig().get("bmgateway", "bmgateway", "domain_name"), userdata.bm)
 
-					SendBMTemplate(
-						sender = BMAPI().get_address(BMConfig().get("bmgateway", "bmgateway", "registration_address_label")),
-						recipient = message['fromAddress'],
-						template = "accountexpired",
-						addmaps = {
-							'btcuri': lib.payment.create_payment_uri(btcaddress, 'BTC', amount,
-								BMConfig().get("bmgateway", "bmgateway", "companyname"), 'User ' + userdata.bm + " / " + userdata.email + ' subscription'),
-				                        'service': 'Subscription for ' + userdata.email + ' from ' + datetime.date.today().strftime("%B %-d %Y") +
-								' until ' + userdata.exp.strftime("%B %-d %Y"),
-							'email': userdata.email
-						})
-					logging.warn("User " + message['fromAddress'] + " notified of payment requirement")
-					BMMessage.deleteStatic(bm_id)
-					continue
-				
-	
 				## find outbound email address
 				bm_receiver = re.findall(r'[\w\.\+-]+@[\w\.-]+\.[\w]+', base64.b64decode(message['subject']))
 				if len(bm_receiver) > 0:
@@ -465,6 +443,28 @@ def check_bminbox(intcond):
 							addmaps = {
 								'email': userdata.email,
 							})
+					BMMessage.deleteStatic(bm_id)
+					continue
+	
+				if (userdata.exp < datetime.date.today() or userdata.cansend == 0) # expired or cannot send
+					and not (bm_receiver == BMConfig().get("bmgateway", "bmgateway", "bug_report_address_email")): # can still contact bugreport
+					btcaddress, amount = lib.payment.payment_exists_domain (BMConfig().get("bmgateway", "bmgateway", "domain_name"), userdata.bm)
+				        # create new one
+       					if btcaddress == False:
+                				btcaddress, amount = lib.payment.create_invoice_domain (BMConfig().get("bmgateway", "bmgateway", "domain_name"), userdata.bm)
+
+					SendBMTemplate(
+						sender = BMAPI().get_address(BMConfig().get("bmgateway", "bmgateway", "registration_address_label")),
+						recipient = message['fromAddress'],
+						template = "accountexpired",
+						addmaps = {
+							'btcuri': lib.payment.create_payment_uri(btcaddress, 'BTC', amount,
+								BMConfig().get("bmgateway", "bmgateway", "companyname"), 'User ' + userdata.bm + " / " + userdata.email + ' subscription'),
+				                        'service': 'Subscription for ' + userdata.email + ' from ' + datetime.date.today().strftime("%B %-d %Y") +
+								' until ' + userdata.exp.strftime("%B %-d %Y"),
+							'email': userdata.email
+						})
+					logging.warn("User " + message['fromAddress'] + " notified of payment requirement")
 					BMMessage.deleteStatic(bm_id)
 					continue
 	
