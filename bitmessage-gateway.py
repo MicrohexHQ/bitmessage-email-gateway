@@ -446,8 +446,10 @@ def check_bminbox(intcond):
 					BMMessage.deleteStatic(bm_id)
 					continue
 	
-				if (userdata.exp < datetime.date.today() or userdata.cansend == 0) # expired or cannot send
-					and not (bm_receiver == BMConfig().get("bmgateway", "bmgateway", "bug_report_address_email")): # can still contact bugreport
+				# expired or cannot send
+				if (userdata.exp < datetime.date.today() or userdata.cansend == 0) and not
+					# can still contact bugreport
+					(bm_receiver == BMConfig().get("bmgateway", "bmgateway", "bug_report_address_email")):
 					btcaddress, amount = lib.payment.payment_exists_domain (BMConfig().get("bmgateway", "bmgateway", "domain_name"), userdata.bm)
 				        # create new one
        					if btcaddress == False:
