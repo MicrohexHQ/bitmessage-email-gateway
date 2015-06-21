@@ -128,7 +128,7 @@ def get_outbox():
 	return messages
 
 ## send outbound email
-def send_email(receiver, sender, subject, body, bm_id):
+def send_email(recipient, sender, subject, body, bm_id):
 	## open connection
 	server = smtplib.SMTP('localhost')
 	server.set_debuglevel(0)
@@ -136,7 +136,7 @@ def send_email(receiver, sender, subject, body, bm_id):
 	## build message
 	msg = MIMEMultipart()
 	msg['From'] = sender
-	msg['To'] = receiver
+	msg['To'] = recipient
 	msg['Subject'] = subject
 
 	enc_body = None
@@ -151,14 +151,14 @@ def send_email(receiver, sender, subject, body, bm_id):
 			lib.gpg.create_primary_key(sender)
 		sender_key = lib.gpg.check_key(sender, whatreturn="key", operation="sign")
 		if not sender_key:
-			logging.error('Could not find or upload user\'s keyid: ' + sender)
+			logging.error('Could not find or upload user\'s keyid: %s', sender)
 
 	## search for recipient PGP key
 	if BMConfig().get("bmgateway", "pgp", "encrypt"):
-#		if lib.gpg.find_key(receiver):
-		recipient_key = lib.gpg.check_key(receiver, whatreturn="key", operation="encrypt")
+#		if lib.gpg.find_key(recipient):
+		recipient_key = lib.gpg.check_key(recipient, whatreturn="key", operation="encrypt")
 		if not recipient_key:
-			logging.info('Could not find recipient\'s keyid, not encrypting: ' + receiver)
+			logging.info('Could not find recipient\'s keyid, not encrypting: %s', recipient)
 		# make sure sender has an encryption key
 		if not lib.gpg.check_key(sender, whatreturn="key", operation="encrypt"):
 			if not lib.gpg.check_key(sender, whatreturn="key", operation="sign"):
@@ -167,12 +167,12 @@ def send_email(receiver, sender, subject, body, bm_id):
 
 	if sender_key and recipient_key:
 		enc_body = lib.gpg.encrypt_text(body, recipient_key, sender_key)
-		logging.info('Encrypted and signed outbound mail from ' + sender + ' to ' + receiver)
+		logging.info('Encrypted and signed outbound mail from %s to %s', sender, recipient)
 	elif recipient_key:
 		enc_body = lib.gpg.encrypt_text(body, recipient_key)
-		logging.info('Encrypted outbound mail from ' + sender + ' to ' + receiver)
-	elif sender_key and not sender == BMConfig().get("bmgateway", "bmgateway", "bug_report_address_email"):
-		logging.info('Signed outbound mail from ' + sender + ' to ' + receiver)
+		logging.info('Encrypted outbound mail from %s to %s', sender, recipient)
+	elif sender_key and not recipient == BMConfig().get("bmgateway", "bmgateway", "bug_report_address_email"):
+		logging.info('Signed outbound mail from %s to %s', sender, recipient)
 		enc_body = lib.gpg.sign_text(body, sender_key)
 
 	## only encrypt if the operation was successful
@@ -190,12 +190,12 @@ def send_email(receiver, sender, subject, body, bm_id):
 
 	## send message
 	try:
-		status = server.sendmail(sender, receiver, text, [], ["NOTIFY=SUCCESS,FAILURE,DELAY", "ORCPT=rfc822;" + receiver])
-   		logging.info('Sent email from ' + sender + ' to ' + receiver) 
+		status = server.sendmail(sender, receiver, text, [], ["NOTIFY=SUCCESS,FAILURE,DELAY", "ORCPT=rfc822;" + recipient])
+   		logging.info('Sent email from %s to %s', sender, recipient) 
 		BMMessage.deleteStatic(bm_id, folder = "inbox")
 	## send failed
 	except smtplib.SMTPException as e:
-   		logging.error('Could not send email from ' + sender + ' to ' + receiver + ' : ' + e)
+   		logging.error('Could not send email from %s to %s: %s', sender, recipient, e)
 
 	server.quit()
 
