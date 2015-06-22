@@ -14,6 +14,6 @@ Deregistration Address:     ${deregisteraddress}
 Relay Address:              ${relayaddress}
 
 *** Reporting Bugs ***
-This service is still in Beta! Please send any comments/bug reports to ${bugreportemail} or send us a bitmessage at ${bugreportaddress}.
+Please send any comments/bug reports to ${bugreportemail} or send us a bitmessage at ${bugreportaddress}.
 
 ${timestamp}
