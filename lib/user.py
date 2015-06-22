@@ -64,12 +64,8 @@ class GWUser(object):
 			postmap = pwd.getpwuid(os.getuid())[0]
 		trash, domain = email.split("@")
 		filterwarnings('ignore', category = MySQLdb.Warning)
-		if int(datetime.datetime.now().strftime("%s")) > 1434931200:
-			cur.execute ("""INSERT IGNORE INTO user (bm, email, postmap, domain, credits, exp, active, cansend, cancharge, caninvoice, attachments)
-				VALUES (%s, %s, %s, %s, '0', NOW(), 1, 1, 0, 0, 0)""", (bm, email, postmap, domain))
-		else:
-			cur.execute ("""INSERT IGNORE INTO user (bm, email, postmap, domain, credits, exp, active, cansend, cancharge, caninvoice, attachments)
-				VALUES (%s, %s, %s, %s, '0', '2015-07-31', 1, 1, 0, 0, 0)""", ( bm, email, postmap, domain))
+		cur.execute ("""INSERT IGNORE INTO user (bm, email, postmap, domain, credits, exp, active, cansend, cancharge, caninvoice, attachments)
+				VALUES (%s, %s, %s, %s, '0', '1971-01-01', 1, 1, 0, 0, 0)""", (bm, email, postmap, domain))
 		uid = None
 		if cur.rowcount == 1:
 			uid = cur.lastrowid
