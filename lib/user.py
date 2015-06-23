@@ -57,6 +57,9 @@ class GWUser(object):
 	def check(self):
 		return self.uid != None
 
+	def expired(self):
+		return self.exp < datetime.date.today()
+
 	def add(self, bm, email, postmap = None):
 		BMMySQL().db.ping(True)
 		cur = BMMySQL().db.cursor()

@@ -128,7 +128,7 @@ def get_outbox():
 	return messages
 
 ## send outbound email
-def send_email(recipient, sender, subject, body, bm_id):
+def send_email(recipient, sender, subject, body, bm_id, userdata = None):
 	## open connection
 	server = smtplib.SMTP('localhost')
 	server.set_debuglevel(0)
@@ -142,11 +142,24 @@ def send_email(recipient, sender, subject, body, bm_id):
 	enc_body = None
 	sender_key = None
 	recipient_key = None
+	sign = BMConfig().get("bmgateway", "pgp", "sign")
+	encrypt = BMConfig().get("bmgateway", "pgp", "encrypt")
+
+	if userdata:
+		if userdata.expired():
+			sign = False
+			encrypt = False
+		else:
+			# only override if not expired and pgp allowed globally
+			if sign:
+				sign = (userdata.pgp == 1)
+			if encrypt:
+				encrypt = (userdata.pgp == 1)
 
 	#TODO find out if already encrypted/signed
 
 	## generate a signing key if we dont have one
-	if BMConfig().get("bmgateway", "pgp", "sign"):
+	if sign:
 		if not lib.gpg.check_key(sender, whatreturn="key", operation="sign"):
 			lib.gpg.create_primary_key(sender)
 		sender_key = lib.gpg.check_key(sender, whatreturn="key", operation="sign")
@@ -154,7 +167,7 @@ def send_email(recipient, sender, subject, body, bm_id):
 			logging.error('Could not find or upload user\'s keyid: %s', sender)
 
 	## search for recipient PGP key
-	if BMConfig().get("bmgateway", "pgp", "encrypt"):
+	if encrypt:
 #		if lib.gpg.find_key(recipient):
 		recipient_key = lib.gpg.check_key(recipient, whatreturn="key", operation="encrypt")
 		if not recipient_key:
@@ -447,7 +460,7 @@ def check_bminbox(intcond):
 					continue
 	
 				# expired or cannot send
-				if (userdata.exp < datetime.date.today() or userdata.cansend == 0) and not \
+				if (userdata.expired() or userdata.cansend == 0) and not \
 					(bm_receiver == BMConfig().get("bmgateway", "bmgateway", "bug_report_address_email")): # can still contact bugreport
 					btcaddress, amount = lib.payment.payment_exists_domain (BMConfig().get("bmgateway", "bmgateway", "domain_name"), userdata.bm)
 				        # create new one
@@ -496,7 +509,7 @@ def check_bminbox(intcond):
 					BMMessage.deleteStatic(bm_id)
 					continue
 				else:
-					send_email(bm_receiver, bm_sender, bm_subject, bm_body, bm_id)
+					send_email(bm_receiver, bm_sender, bm_subject, bm_body, bm_id, userdata = userdata)
 					logging.info('Relayed from %s to %s', message['fromAddress'], bm_receiver)
 
 			## remove message
@@ -784,7 +797,7 @@ def handle_email(k):
 			if part.get_content_type() == 'application/pgp-signature':
 				plain, sigverify_ok = lib.gpg.verify(body_raw, msg_sender, msg_recipient, part.get_payload(decode=1))
 
-	if userdata.attachments == 1:
+	if userdata.attachments == 1 and not userdata.expired():
 		for part in msg_tmp.walk():
 			if part.has_key("Content-Disposition") and part.__getitem__("Content-Disposition")[:11] == "attachment;":
 				# fix encoding
