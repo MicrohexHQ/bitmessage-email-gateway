@@ -4,6 +4,8 @@ Thank you for your registration request for ${email}. Your account is now set up
 
 *** Sending Emails ***
 To send emails to the Internet, send a bitmessage to ${relayaddress} with the destination email address in the subject line.
+Kindly note that sending emails requires a paid subscription (1 USD per month),
+and upon sending the first message, you will receive a payment request. 
 
 *** Unregistering Your Account ***
 To unregister, simply send a message from this address to ${deregisteraddress}.
