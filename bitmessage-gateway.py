@@ -579,7 +579,10 @@ def handle_email(k):
 	if msg_sender == '<>' or not msg_sender:
 		msg_sender = BMConfig().get("bmgateway", "bmgateway", "relay_address_label")
 	else:
-		msg_sender    = re.findall(r'[\w\.+-]+@[\w\.-]+.[\w]+', msg_sender)[0]
+		try:
+			msg_sender    = re.findall(r'[\w\.+-]+@[\w\.-]+.[\w]+', msg_sender)[0]
+		except:
+			pass
 	msg_sender = msg_sender.lower()
 
 	msg_recipient = ""
@@ -658,9 +661,12 @@ def handle_email(k):
 	# DKIM
 	ar = msg_tmp.get_param("dkim", "missing", "Authentication-Results")
 	if ar == "missing":
-		domain = msg_sender.split("@")[-1]
-		if lib.user.GWDomain(domain).check() and domain == msg_tmp.get_param("d", "missing", "DKIM-Signature"):
-			ar = "pass" # we trust MTA to reject fakes
+		try:
+			domain = msg_sender.split("@")[-1]
+			if lib.user.GWDomain(domain).check() and domain == msg_tmp.get_param("d", "missing", "DKIM-Signature"):
+				ar = "pass" # we trust MTA to reject fakes
+		except:
+			pass
 
 	## inline PGP
 	for part in msg_tmp.walk():
