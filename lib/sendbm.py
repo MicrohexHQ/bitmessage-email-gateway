@@ -23,13 +23,13 @@ class SendBM(object):
 		userdata = lib.user.GWUser(bm = recipient)
 		if userdata.check():
 			recipient = userdata.email
+		self.status = False
 		try:
 			ackData = BMAPI().conn().sendMessage(recipientbm, senderbm, self.subject, self.body, 2)
 			logging.info("Sent BM from %s to %s: %s", sender, recipient, ackData)
+			self.status = True
 		except:
 			logging.error("Failure sending BM from %s to %s", sender, recipient)
-			self.status = False
-		self.status = True
 
 class SendBMTemplate(SendBM):
 	def __init__ (self, sender, recipient, template, addmaps = None):
