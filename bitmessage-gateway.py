@@ -807,14 +807,18 @@ def handle_email(k):
 		for part in msg_tmp.walk():
 			if part.has_key("Content-Disposition") and part.__getitem__("Content-Disposition")[:11] == "attachment;":
 				# fix encoding
-				filename = email.header.decode_header(part.get_filename())
-				encoding = filename[0][1]
-				filename = filename[0][0]
+				try:
+					filename = email.header.decode_header(part.get_filename())
+					encoding = filename[0][1]
+					filename = filename[0][0]
+				except:
+					filename = part.get_filename()
+					encoding = False
 
 				file_id, link = lib.bmmega.mega_upload(userdata.bm, filename, part.get_payload(decode = 1))
 				if encoding:
 					filename = unicode(filename, encoding)
-				logging.info("Attachment \"" + filename + "\" (" + part.get_content_type() + ")")
+				logging.info("Attachment \"%s\" (%s)", filename, part.get_content_type())
 				msg_body = "Attachment \"" + filename + "\" (" + part.get_content_type() + "): " + link + "\n" + msg_body
 
 	if not decrypt_ok:
