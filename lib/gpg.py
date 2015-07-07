@@ -32,6 +32,8 @@ class KeyEditor:
 			self.steps = ["addkey", "quit"]
 		elif mode == "delkey":
 			self.steps = ["expired_keynum", "delkey", "quit"]
+		elif mode == "revkey":
+			self.steps = ["revkey", "quit"]
 		self.step = 0
 
 	def edit_fnc(self, status, args, out):
@@ -62,6 +64,14 @@ class KeyEditor:
 		elif args == "keyedit.save.okay":
 			result = "Y"
 		elif args == "keyedit.remove.subkey.okay":
+			result = "Y"
+		elif args == "keyedit.revoke.subkey.okay":
+			result = "Y"
+		elif args == "ask_revocation_reason.code":
+			result = "3"
+		elif args == "ask_revocation_reason.text":
+			result = ""
+		elif args == "ask_revocation_reason.okay":
 			result = "Y"
 		elif args == "keygen.algo":
 			result = "6"
