@@ -224,7 +224,7 @@ def key_to_mysql(key):
 
 def key_from_mysql(key):
 	cur = BMMySQL().db.cursor(MySQLdb.cursors.DictCursor)
-	logger.info("Importing GPG keys from SQL for %s", key)
+	logging.info("Importing GPG keys from SQL for %s", key)
 	cur.execute ("SELECT data FROM gpg WHERE email = %s", (key))
 	for row in cur.fetchall():
 		import_key(row['data'])
