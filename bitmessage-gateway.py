@@ -880,9 +880,11 @@ def check_emails(intcond):
 	if not dir:
 		return
 
-	## iterate through new messages
+	## iterate through new messages, each in thread so that crashes do not prevent continuing
 	for k in dir:
-		handle_email(k)
+		email_thread = threading.Thread(target=handle_email, name="EmailIn", args=(k,))
+		email_thread.start()
+		email_thread.join()
 
 if not BMMySQL().connect():
 	print "Failed to connect to mysql"
