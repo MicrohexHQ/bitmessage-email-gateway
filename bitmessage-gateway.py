@@ -682,6 +682,8 @@ def handle_email(k):
 						state = 1
 					elif pgppart == "END PGP MESSAGE":
 						pgp_body += "-----" + pgppart + "-----"
+						# import from sql if necessary
+						lib.gpg.check_key(msg_recipient)
 						decrypted, sigverify_ok = lib.gpg.decrypt_content(pgp_body, msg_sender, msg_recipient)
 						if isinstance(decrypted, basestring):
 							part_str = decrypted
@@ -701,6 +703,8 @@ def handle_email(k):
 						state = 3
 					elif pgppart == "END PGP SIGNATURE":
 						pgp_body += "-----" + pgppart + "-----"
+						# import from sql if necessary
+						lib.gpg.check_key(msg_recipient)
 						plain, sigverify_ok = lib.gpg.verify(pgp_body, msg_sender, msg_recipient)
 						if isinstance(plain, basestring):
 							part_str = plain
@@ -724,6 +728,8 @@ def handle_email(k):
 						pgp_body += pgppart
 			else:
 				if "BEGIN PGP MESSAGE" in part_str:
+					# import from sql if necessary
+					lib.gpg.check_key(msg_recipient)
 					decrypted, sigverify_ok = lib.gpg.decrypt_content(part_str, msg_sender, msg_recipient)
 					if isinstance(decrypted, basestring):
 						part_str = decrypted
@@ -732,6 +738,8 @@ def handle_email(k):
 						part_str = part.get_payload(decode = 0)
 					logging.info("Decrypted email from " + msg_sender + " to " + msg_recipient)
 				elif "BEGIN PGP SIGNED MESSAGE" in part_str:
+					# import from sql if necessary
+					lib.gpg.check_key(msg_recipient)
 					plain, sigverify_ok = lib.gpg.verify(part_str, msg_sender, msg_recipient)
 					if isinstance(plain, basestring):
 						part_str = plain
@@ -769,6 +777,8 @@ def handle_email(k):
 		for part in msg_tmp.walk():
 			if part.get_content_type() == 'application/pgp-encrypted':
 				has_encrypted_parts = True
+				# import from sql if necessary
+				lib.gpg.check_key(msg_recipient)
 
 			## look for encrypted attachment containing text
 			if part.get_content_type() == 'application/octet-stream' and has_encrypted_parts:
@@ -801,6 +811,8 @@ def handle_email(k):
 	if not sigverify_ok:
 		for part in msg_tmp.walk():
 			if part.get_content_type() == 'application/pgp-signature':
+				# import from sql if necessary
+				lib.gpg.check_key(msg_recipient)
 				plain, sigverify_ok = lib.gpg.verify(body_raw, msg_sender, msg_recipient, part.get_payload(decode=1))
 
 	if userdata.attachments == 1 and not userdata.expired():
