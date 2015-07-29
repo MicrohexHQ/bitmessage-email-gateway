@@ -3,7 +3,7 @@
 import urllib, json
 import qrcode
 import base64
-import pybitcointools
+import bitcoin
 import MySQLdb
 import StringIO
 import jsonrpclib
@@ -51,13 +51,13 @@ def create_invoice_domain (domain, payer):
 	while result:
 		if result['masterpubkey_btc'][0:4] == "xpub":
 			# BIP44
-			dpk1 = pybitcointools.bip32_ckd(result['masterpubkey_btc'], 0)
-			dpk2 = pybitcointools.bip32_ckd(dpk1, result['offset_btc'])
-			pubkey = pybitcointools.bip32_extract_key(dpk2)
+			dpk1 = bitcoin.bip32_ckd(result['masterpubkey_btc'], 0)
+			dpk2 = bitcoin.bip32_ckd(dpk1, result['offset_btc'])
+			pubkey = bitcoin.bip32_extract_key(dpk2)
 		else:
 			# Electrum 1.x
-			pubkey = pybitcointools.electrum_pubkey(result['masterpubkey_btc'], result['offset_btc'])
-		address = pybitcointools.pubkey_to_address(pubkey)
+			pubkey = bitcoin.electrum_pubkey(result['masterpubkey_btc'], result['offset_btc'])
+		address = bitcoin.pubkey_to_address(pubkey)
 		cur.execute ("UPDATE domain SET offset_btc = offset_btc + 1 WHERE name = %s AND active = 1 AND masterpubkey_btc = %s", (domain, result['masterpubkey_btc']))
 		if result['feecurrency'] in ("USD", "GBP", "EUR"):
 			result['feeamount'] /= decimal.Decimal(get_bitcoin_price(result['feecurrency']))
@@ -88,13 +88,13 @@ def create_invoice_user (email):
 	if result:
 		if result['masterpubkey_btc'][0:4] == "xpub":
 			# BIP44
-			dpk1 = pybitcointools.bip32_ckd(result['masterpubkey_btc'], 0)
-			dpk2 = pybitcointools.bip32_ckd(dpk1, result['offset_btc'])
-			pubkey = pybitcointools.bip32_extract_key(dpk2)
+			dpk1 = bitcoin.bip32_ckd(result['masterpubkey_btc'], 0)
+			dpk2 = bitcoin.bip32_ckd(dpk1, result['offset_btc'])
+			pubkey = bitcoin.bip32_extract_key(dpk2)
 		else:
 			# Electrum 1.x
-			pubkey = pybitcointools.electrum_pubkey(result['masterpubkey_btc'], result['offset_btc'])
-		address = pybitcointools.pubkey_to_address(pubkey)
+			pubkey = bitcoin.electrum_pubkey(result['masterpubkey_btc'], result['offset_btc'])
+		address = bitcoin.pubkey_to_address(pubkey)
 		cur.execute ("UPDATE user SET offset_btc = offset_btc + 1 WHERE email = %s AND active = 1 AND masterpubkey_btc = %s", (email, result['masterpubkey_btc']))
 		if result['feecurrency'] in ("USD", "GBP", "EUR"):
 			result['feeamount'] /= decimal.Decimal(get_bitcoin_price(result['feecurrency']))
