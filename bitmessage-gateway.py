@@ -916,6 +916,7 @@ else:
 		time.sleep(random.random()+0.5)
 
 	milter_thread = threading.Thread()
+	pgp_thread = threading.Thread()
 	email_thread = threading.Thread()
 	bminbox_thread = threading.Thread()
 	bmoutbox_thread = threading.Thread()
@@ -958,6 +959,13 @@ else:
 			milter_thread = threading.Thread(target=lib.milter.run, name="Milter")
 			milter_thread.start()
 
+		if BMConfig().get("bmgateway", "bmgateway", "pgp_thread") and not pgp_thread.isAlive():
+			if pgp_thread.ident is not None:
+				pgp_thread.join()
+			pgp_thread = threading.Thread(target=lib.gpg.serve, name="GPG")
+			pgp_thread.start()
+
+
 		try:
 			time.sleep(BMConfig().get("bmgateway", "bmgateway", "process_interval"))
 		except KeyboardInterrupt:
@@ -979,6 +987,11 @@ else:
 		bminbox_thread.join()
 		if bmoutbox_thread.ident is not None:
 			bmoutbox_thread.join()
+
+	if BMConfig().get("bmgateway", "bmgateway", "pgp_thread"):
+		if pgp_thread.isAlive:
+			pgp_thread.stop()
+		pgp_thread.join()
 
 	if BMConfig().get("bmgateway", "bmgateway", "milter_thread") and milter_thread.isAlive():
 		#milter_thread.stop()
