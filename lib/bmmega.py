@@ -2,6 +2,7 @@
 
 from lib.config import BMConfig
 from lib.mysql import BMMySQL
+import logging
 from mega import Mega
 import sys
 import time
