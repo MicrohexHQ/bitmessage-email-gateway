@@ -366,7 +366,7 @@ def check_key(address, whatreturn="keyid", operation="any", expired=False):
 		for key in gpgme.op_keylist_all(address, 0):
 			# TODO differentiate signing and encryption
 			for subkey in key.subkeys:
-				if (not expired and not subkey.expired) and not subkey.disabled and (operation == "any" or
+				if (not expired and not subkey.expired) and not subkey.disabled and not subkey.revoked and (operation == "any" or
 					(operation == "encrypt" and subkey.can_encrypt) or (operation == "sign" and subkey.can_sign)):
 					if whatreturn == "keyid":
 						return subkey.keyid
