@@ -23,17 +23,31 @@ def mega_upload(bm, fname, data):
 		return None, None
 	foldername = BMConfig().get("bmgateway", "mega", "folder")
 	folder = m.find(foldername)
-	loops = 10
+	loops = 30
 	while folder == None and loops > 0:
-		m.create_folder(foldername)
-		folder = m.find(foldername)
+		try:
+			m.create_folder(foldername)
+			folder = m.find(foldername)
+		except:
+			pass
 		if folder == None:
 			time.sleep (1)
 		loops -= 1
 	if folder == None:
 		return None, None
 
-	uploadedfile = m.upload(data, folder[0], dest_filename=fname, save_key=False)
+	
+	uploadedfile = None
+	loops = 30
+	while uploadedfile == None and loops > 0:
+		try:
+			uploadedfile = m.upload(data, folder[0], dest_filename=fname, save_key=False)
+		except:
+			pass
+		if uploadedfile == None:
+			time.sleep (1)
+		loops -= 1
+		
 	file_id = uploadedfile['f'][0]['h']
 	link = m.get_upload_link(uploadedfile)
 	BMMySQL().db.ping(True)
