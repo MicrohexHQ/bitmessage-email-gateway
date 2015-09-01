@@ -22,7 +22,7 @@ class BaseBMConfig(object):
 				"throttle": "float",
 				"incoming_thread": "int",
 				"outgoing_thread": "int",
-				"pgp_thread": "boolean",
+				"maintenance_thread": "boolean",
 				"milter_thread": "boolean",
 				"process_interval": "float",
 				"outbox_process_interval": "float"

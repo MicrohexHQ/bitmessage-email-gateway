@@ -29,6 +29,7 @@ from lib.bmlogging import BMLogging
 from lib.bmapi import BMAPI
 from lib.sendbm import SendBMTemplate, SendBM
 from lib.bmmessage import BMMessage
+import lib.maintenance
 import lib.user
 import random
 from subprocess import call
@@ -672,79 +673,82 @@ def handle_email(k):
 	for part in msg_tmp.walk():
 		if part and part.get_content_type() == 'text/plain' and not (part.has_key("Content-Disposition") and part.__getitem__("Content-Disposition")[:11] == "attachment;"):
 			part_str = part.get_payload(decode=1)
-			if userdata.flags & 1 == 1:
-				pgpparts = part_str.split("-----")
-				state = 0
-				pgp_body = ""
-				for pgppart in pgpparts:
-					if pgppart == "BEGIN PGP MESSAGE":
-						pgp_body = "-----" + pgppart + "-----"
-						state = 1
-					elif pgppart == "END PGP MESSAGE":
-						pgp_body += "-----" + pgppart + "-----"
+			if userdata.pgp == 1:
+				if userdata.flags & 1 == 1:
+					pgpparts = part_str.split("-----")
+					state = 0
+					pgp_body = ""
+					for pgppart in pgpparts:
+						if pgppart == "BEGIN PGP MESSAGE":
+							pgp_body = "-----" + pgppart + "-----"
+							state = 1
+						elif pgppart == "END PGP MESSAGE":
+							pgp_body += "-----" + pgppart + "-----"
+							# import from sql if necessary
+							lib.gpg.check_key(msg_recipient)
+							decrypted, sigverify_ok = lib.gpg.decrypt_content(pgp_body, msg_sender, msg_recipient)
+							if isinstance(decrypted, basestring):
+								part_str = decrypted
+								decrypt_ok = True
+							#else:
+								#part_str = part.get_payload(decode = 0)
+							sigresult = "fail"
+							if sigverify_ok:
+								sigresult = "ok"
+							logging.info("Decrypted email from " + msg_sender + " to " + msg_recipient + ", signature: " + sigresult)
+							state = 0
+						elif pgppart == "BEGIN PGP SIGNED MESSAGE":
+							pgp_body += "-----" + pgppart + "-----"
+							state = 2
+						elif pgppart == "BEGIN PGP SIGNATURE":
+							pgp_body += "-----" + pgppart + "-----"
+							state = 3
+						elif pgppart == "END PGP SIGNATURE":
+							pgp_body += "-----" + pgppart + "-----"
+							# import from sql if necessary
+							lib.gpg.check_key(msg_recipient)
+							plain, sigverify_ok = lib.gpg.verify(pgp_body, msg_sender, msg_recipient)
+							if isinstance(plain, basestring):
+								part_str = plain
+							#else:
+								#part_str = part.get_payload(decode = 0)
+							sigresult = "fail"
+							if sigverify_ok:
+								sigresult = "ok"
+							logging.info("Verifying PGP signature from " + msg_sender + " to " + msg_recipient + ": " + sigresult)
+							state = 0
+						elif state == 0:
+							if part.get_content_charset():
+								msg_body += pgppart.decode(part.get_content_charset())
+							else:
+								charset = chardet.detect(pgppart)
+								if charset['encoding']:
+									msg_body += pgppart.decode(charset['encoding'])
+								else:
+									msg_body += pgppart.decode('ascii')
+						elif state > 0:
+							pgp_body += pgppart
+				else:
+					if "BEGIN PGP MESSAGE" in part_str:
 						# import from sql if necessary
 						lib.gpg.check_key(msg_recipient)
-						decrypted, sigverify_ok = lib.gpg.decrypt_content(pgp_body, msg_sender, msg_recipient)
+						decrypted, sigverify_ok = lib.gpg.decrypt_content(part_str, msg_sender, msg_recipient)
 						if isinstance(decrypted, basestring):
 							part_str = decrypted
 							decrypt_ok = True
-						#else:
-							#part_str = part.get_payload(decode = 0)
-						sigresult = "fail"
-						if sigverify_ok:
-							sigresult = "ok"
-						logging.info("Decrypted email from " + msg_sender + " to " + msg_recipient + ", signature: " + sigresult)
-						state = 0
-					elif pgppart == "BEGIN PGP SIGNED MESSAGE":
-						pgp_body += "-----" + pgppart + "-----"
-						state = 2
-					elif pgppart == "BEGIN PGP SIGNATURE":
-						pgp_body += "-----" + pgppart + "-----"
-						state = 3
-					elif pgppart == "END PGP SIGNATURE":
-						pgp_body += "-----" + pgppart + "-----"
+						else:
+							part_str = part.get_payload(decode = 0)
+						logging.info("Decrypted email from " + msg_sender + " to " + msg_recipient)
+					elif "BEGIN PGP SIGNED MESSAGE" in part_str:
 						# import from sql if necessary
 						lib.gpg.check_key(msg_recipient)
-						plain, sigverify_ok = lib.gpg.verify(pgp_body, msg_sender, msg_recipient)
+						plain, sigverify_ok = lib.gpg.verify(part_str, msg_sender, msg_recipient)
 						if isinstance(plain, basestring):
 							part_str = plain
-						#else:
-							#part_str = part.get_payload(decode = 0)
-						sigresult = "fail"
-						if sigverify_ok:
-							sigresult = "ok"
-						logging.info("Verifying PGP signature from " + msg_sender + " to " + msg_recipient + ": " + sigresult)
-						state = 0
-					elif state == 0:
-						if part.get_content_charset():
-							msg_body += pgppart.decode(part.get_content_charset())
 						else:
-							charset = chardet.detect(pgppart)
-							if charset['encoding']:
-								msg_body += pgppart.decode(charset['encoding'])
-							else:
-								msg_body += pgppart.decode('ascii')
-					elif state > 0:
-						pgp_body += pgppart
-			else:
-				if "BEGIN PGP MESSAGE" in part_str:
-					# import from sql if necessary
-					lib.gpg.check_key(msg_recipient)
-					decrypted, sigverify_ok = lib.gpg.decrypt_content(part_str, msg_sender, msg_recipient)
-					if isinstance(decrypted, basestring):
-						part_str = decrypted
-						decrypt_ok = True
-					else:
-						part_str = part.get_payload(decode = 0)
-					logging.info("Decrypted email from " + msg_sender + " to " + msg_recipient)
-				elif "BEGIN PGP SIGNED MESSAGE" in part_str:
-					# import from sql if necessary
-					lib.gpg.check_key(msg_recipient)
-					plain, sigverify_ok = lib.gpg.verify(part_str, msg_sender, msg_recipient)
-					if isinstance(plain, basestring):
-						part_str = plain
-					else:
-						part_str = part.get_payload(decode = 0)
+							part_str = part.get_payload(decode = 0)
+			# PGP END
+			
 			body_raw += part.as_string(False)
 			#print part.get_content_charset()
 			#print msg_tmp.get_charset()
@@ -773,7 +777,7 @@ def handle_email(k):
 	## if there's no plaintext or html, check if it's encrypted
 	# PGP/MIME
 	has_encrypted_parts = False
-	if not msg_body:
+	if not msg_body and userdata.pgp == 1:
 		for part in msg_tmp.walk():
 			if part.get_content_type() == 'application/pgp-encrypted':
 				has_encrypted_parts = True
@@ -808,7 +812,7 @@ def handle_email(k):
 				else:
 					logging.debug("Received application/octet-stream type in inbound email, but did not see encryption header")
 
-	if not sigverify_ok:
+	if not sigverify_ok and userdata.pgp == 1:
 		for part in msg_tmp.walk():
 			if part.get_content_type() == 'application/pgp-signature':
 				# import from sql if necessary
@@ -832,11 +836,14 @@ def handle_email(k):
 					filename = unicode(filename, encoding)
 				logging.info("Attachment \"%s\" (%s)", filename, part.get_content_type())
 				msg_body = "Attachment \"" + filename + "\" (" + part.get_content_type() + "): " + link + "\n" + msg_body
-
-	if not decrypt_ok:
-		msg_body = "WARNING: PGP encryption missing or invalid. The message content could be exposed to third parties.\n" + msg_body
-	if not sigverify_ok:
-		msg_body = "WARNING: PGP signature missing or invalid. The authenticity of the message could not be verified.\n" + msg_body
+	if userdata.pgp == 1:
+		if not decrypt_ok:
+			msg_body = "WARNING: PGP encryption missing or invalid. The message content could be exposed to third parties.\n" + msg_body
+		if not sigverify_ok:
+			msg_body = "WARNING: PGP signature missing or invalid. The authenticity of the message could not be verified.\n" + msg_body
+	else:
+		msg_body = "WARNING: Server-side PGP is off, passing message as it is.\n" + msg_body
+		
 	if not ar[0:4] == "pass":
 		msg_body = "WARNING: DKIM signature missing or invalid. The email may not have been sent through legitimate servers.\n" + msg_body
 
@@ -916,7 +923,7 @@ else:
 		time.sleep(random.random()+0.5)
 
 	milter_thread = threading.Thread()
-	pgp_thread = threading.Thread()
+	maintenance_thread = threading.Thread()
 	email_thread = threading.Thread()
 	bminbox_thread = threading.Thread()
 	bmoutbox_thread = threading.Thread()
@@ -959,11 +966,11 @@ else:
 			milter_thread = threading.Thread(target=lib.milter.run, name="Milter")
 			milter_thread.start()
 
-		if BMConfig().get("bmgateway", "bmgateway", "pgp_thread") and not pgp_thread.isAlive():
-			if pgp_thread.ident is not None:
-				pgp_thread.join()
-			pgp_thread = threading.Thread(target=lib.gpg.serve, name="GPG")
-			pgp_thread.start()
+		if BMConfig().get("bmgateway", "bmgateway", "maintenance_thread") and not maintenance_thread.isAlive():
+			if maintenance_thread.ident is not None:
+				maintenance_thread.join()
+			maintenance_thread = threading.Thread(target=lib.maintenance.serve, name="Maintenance")
+			maintenance_thread.start()
 
 
 		try:
@@ -988,10 +995,10 @@ else:
 		if bmoutbox_thread.ident is not None:
 			bmoutbox_thread.join()
 
-	if BMConfig().get("bmgateway", "bmgateway", "pgp_thread"):
-		if pgp_thread.isAlive:
-			pgp_thread.stop()
-		pgp_thread.join()
+	if BMConfig().get("bmgateway", "bmgateway", "maintenance_thread"):
+		if maintenance_thread.isAlive:
+			maintenance_thread.stop()
+		maintenance_thread.join()
 
 	if BMConfig().get("bmgateway", "bmgateway", "milter_thread") and milter_thread.isAlive():
 		#milter_thread.stop()
