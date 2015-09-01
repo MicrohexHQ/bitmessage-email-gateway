@@ -340,7 +340,7 @@ def check_bminbox(intcond):
 								'cansend': "Yes" if userdata.cansend else "No",
 								'cancharge': "Yes" if userdata.cancharge else "No",
 								'caninvoice': "Yes" if userdata.caninvoice else "No",
-								'pgp': "Yes" if userdata.pgp else "No",
+								'pgp': "server" if userdata.pgp else "local",
 								'attachments': "Yes" if userdata.attachments else "No",
 								'expires': userdata.exp.strftime("%B %-d %Y"),
 								'masterpubkey_btc': userdata.masterpubkey_btc if userdata.masterpubkey_btc else "N/A",
@@ -348,7 +348,8 @@ def check_bminbox(intcond):
 								'feeamount': str(userdata.feeamount) if userdata.masterpubkey_btc else "N/A",
 								'feecurrency': str(userdata.feecurrency) if userdata.masterpubkey_btc else "N/A",
 								'archive': "Yes" if userdata.archive else "No",
-								'flags': userdata.flags
+								'flags': hex(userdata.flags),
+								'aliases': ', '.join(userdata.aliases) if userdata.aliases else "None"
 							})
 					else:
 						logging.info('Invalid command from %s', message['fromAddress'])

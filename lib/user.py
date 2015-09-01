@@ -37,7 +37,7 @@ class GWUser(object):
 			cur.execute ("SELECT * FROM user WHERE uid = %s", (uid))
 		elif email != None:
 			if unalias:
-				alias = GWAlias(email).target
+				alias = GWAlias(email = email).target
 				if alias:
 					email = alias
 			cur.execute ("SELECT * FROM user WHERE email = %s", (email))
@@ -53,6 +53,7 @@ class GWUser(object):
 				for column in row:
 					setattr(self, column, row[column])
 		cur.close()
+		self.aliases = GWAlias(alias = self.email).aliases
 
 	def check(self):
 		return self.uid != None
@@ -108,23 +109,29 @@ class GWUser(object):
 		cur.close()
 
 class GWAlias(object):
-	def __init__(self, email):
-		self.alias = None
+	def __init__(self, email = None, alias = None):
+		self.aliases = []
 		self.target = None
 		BMMySQL().db.ping(True)
 		cur = BMMySQL().db.cursor(MySQLdb.cursors.DictCursor)
 		result = False
-		seen = {email: True}
-		src = email
-		while not result:
-			cur.execute ("SELECT target FROM alias WHERE alias = %s", (src))
-			result = True
+		if email:
+			seen = {email: True}
+			src = email
+			while not result:
+				cur.execute ("SELECT target FROM alias WHERE alias = %s", (src))
+				result = True
+				for row in cur.fetchall():
+					result = False
+					seen[row['target']] = True
+					src = row['target']
+					for column in row:
+						setattr(self, column, row[column])
+		elif alias:
+			cur.execute ("SELECT alias FROM alias WHERE target = %s", (alias))
 			for row in cur.fetchall():
-				result = False
-				seen[row['target']] = True
-				src = row['target']
-				for column in row:
-					setattr(self, column, row[column])
+				self.aliases.append(row['alias'])
+		cur.close()
 
 	def gettarget(self):
 		return self.target
