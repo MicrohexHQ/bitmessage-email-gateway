@@ -1,0 +1,8 @@
+Subject: Relay error
+
+Your email to ${emailrcpt} was not relayed. The SMTP server replied:
+
+Error code: ${errcode}
+Error message: ${errmessage}
+
+${timestamp}
