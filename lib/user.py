@@ -53,7 +53,7 @@ class GWUser(object):
 				for column in row:
 					setattr(self, column, row[column])
 		cur.close()
-		if self.email:
+		if hasattr(self, 'email'):
 			self.aliases = GWAlias(alias = self.email).aliases
 
 	def check(self):
