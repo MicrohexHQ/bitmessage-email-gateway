@@ -208,10 +208,15 @@ def send_email(recipient, sender, subject, body, bm_id, userdata = None):
    		logging.info('Sent email from %s to %s', sender, recipient) 
 		BMMessage.deleteStatic(bm_id, folder = "inbox")
 	## send failed
+	
 	except smtplib.SMTPException as e:
    		logging.error('Could not send email from %s to %s: %s', sender, recipient, e)
+		server.quit()
+		for rcpt in e.recipients:
+			return e.recipients[rcpt]
 
 	server.quit()
+	return
 
 ## list known addresses
 def list_addresses():
@@ -511,8 +516,25 @@ def check_bminbox(intcond):
 					BMMessage.deleteStatic(bm_id)
 					continue
 				else:
-					send_email(bm_receiver, bm_sender, bm_subject, bm_body, bm_id, userdata = userdata)
-					logging.info('Relayed from %s to %s', message['fromAddress'], bm_receiver)
+					retval = send_email(bm_receiver, bm_sender, bm_subject, bm_body, bm_id, userdata = userdata)
+					if retval is None:
+						logging.info('Relayed from %s to %s', message['fromAddress'], bm_receiver)
+					else:
+						if retval[0] >= 400 and retval[0] < 500:
+							# do not delete, repeatable
+							continue
+						else:
+							SendBMTemplate(
+								sender = message['toAddress'],
+								recipient = message['fromAddress'],
+								template = "smtperror",
+								addmaps = {
+									'emailrcpt': bm_receiver,
+									'errcode': retval[0],
+									'errmessage': retval[1]
+								}
+							)
+							
 
 			## remove message
 			BMMessage.deleteStatic(bm_id)
