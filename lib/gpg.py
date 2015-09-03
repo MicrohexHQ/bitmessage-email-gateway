@@ -109,9 +109,9 @@ def encrypt_text(text, recipient_key, sender_key = None):
 #		return False
 	if sender_key:
 		gpgme.op_encrypt_sign ([recipient_key], 1, plain, encrypted)
-		logging.info('GPG encrypted to %s, signed by %s' % (recipient_key.subkeys[0].keyid[:-8], sender_key.subkeys[0].keyid[:-8]))
+		logging.info('GPG encrypted to %s, signed by %s' % (recipient_key.subkeys[0].fpr[-8:], sender_key.subkeys[0].fpr[-8:]))
 	else:
-		logging.info('GPG encrypted to %s, no signature' % (recipient_key.subkeys[0].keyid[:-8]))
+		logging.info('GPG encrypted to %s, no signature' % (recipient_key.subkeys[0].fpr[-8:]))
 		gpgme.op_encrypt ([recipient_key], 1, plain, encrypted)
 	encrypted.seek (0, 0)
 	return encrypted.read()
@@ -129,7 +129,7 @@ def sign_text(text, key):
 		# can't sign
 		return False
 	gpgme.op_sign (plain, signed, pyme.pygpgme.GPGME_SIG_MODE_CLEAR)
-	logging.info('GPG signed by %s, not encrypted' % (sender_key.subkeys[0].keyid[:-8]))
+	logging.info('GPG signed by %s, not encrypted' % (key.subkeys[0].fpr[-8:]))
 	signed.seek (0, 0)
 
 	return str(signed.read())
