@@ -500,6 +500,10 @@ def check_bminbox(intcond):
 	
 				## get message contents
 				bm_body = base64.b64decode(message['message'])	
+
+				## pad with a newline, otherwise it may look ugly
+				if bm_body[-1:] != '\n':
+					bm_body += '\n'
 	
 				## send message and delete bitmessage, bitches
 				if (float(userdata.lastrelay) + BMConfig().get("bmgateway", "bmgateway", "throttle") > time.time()):
