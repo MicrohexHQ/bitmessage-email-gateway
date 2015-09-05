@@ -52,5 +52,19 @@ class BaseBMMySQL(object):
 				print "No host or unix socket in mysql definition for " + mysql
 		return False
 
+	def filter_column_names (self, table, data):
+		self.db.ping(True)
+		cur = self.db.cursor()
+		cur.execute("SHOW COLUMNS FROM user")
+		all_column_names = {}
+		for row in cur.fetchall():
+			all_column_names[row[0]] = True
+		column_names = {}
+		for key in data:
+			if key in all_column_names:
+				column_names[key] = data[key]
+		return column_names
+
+
 class BMMySQL(BaseBMMySQL):
 	__metaclass__ = lib.singleton.Singleton
