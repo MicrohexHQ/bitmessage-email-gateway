@@ -330,8 +330,50 @@ def check_bminbox(intcond):
 
 				if userdata.check(): # status, config, etc
 					command = base64.b64decode(message['subject']).lower()
-					if command == "blabla":
-						logging.info('Blabla request from %s', message['fromAddress'])
+					if command == "config":
+						logging.info('Config request from %s', message['fromAddress'])
+						body = base64.b64decode(message['message'])
+						data = {}
+						for line in body.splitlines():
+							option = re.search("(\S+)\s*:\s*(\S+)", line)
+							if option is None:
+								continue
+							if option.group(1).lower() == "pgp":
+								data['pgp'] = lib.user.GWUserData.pgp(option.group(2))
+							elif option.group(1).lower() == "attachments":
+								data['attachments'] = lib.user.GWUserData.zero_one(option.group(2))
+							#elif option.group(1).lower() == "flags":
+								#data['flags'] = lib.user.GWUserData.numeric(option.group(2))
+							elif option.group(1).lower() == "archive":
+								data['archive'] = lib.user.GWUserData.zero_one(option.group(2))
+							elif option.group(1).lower() == "masterpubkey_btc":
+								data['masterpubkey_btc'] = lib.user.GWUserData.public_seed(option.group(2))
+								# reset offset unless set explicitly
+								if data['masterpubkey_btc'] is not None and not 'offset_btc' in data:
+									data['offset_btc'] = "0"
+							elif option.group(1).lower() == "offset_btc":
+								data['offset_btc'] = lib.user.GWUserData.numeric(option.group(2))
+							elif option.group(1).lower() == "feeamount":
+								data['feeamount'] = lib.user.GWUserData.numeric(option.group(2), 8)
+							elif option.group(1).lower() == "feecurrency":
+								data['feecurrency'] = lib.user.GWUserData.currency(option.group(2))
+							else:
+								pass
+						if userdata.update(data):
+							SendBMTemplate(
+								sender = BMAPI().get_address(BMConfig().get("bmgateway", "bmgateway", "registration_address_label")),
+								recipient = message['fromAddress'],
+								template = "configchange",
+								addmaps = {
+								})
+						else:
+							SendBMTemplate(
+								sender = BMAPI().get_address(BMConfig().get("bmgateway", "bmgateway", "registration_address_label")),
+								recipient = message['fromAddress'],
+								template = "confignochange",
+								addmaps = {
+								})
+							pass
 					elif command == "status" or command == "" or not command:
 						logging.info('Status request from %s', message['fromAddress'])
 						SendBMTemplate(

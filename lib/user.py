@@ -95,6 +95,23 @@ class GWUser(object):
 			logging.info('Asked to delete nonexisting user')
 		cur.close()
 
+	def update(self, data):
+		BMMySQL().db.ping(True)
+		cur = BMMySQL().db.cursor()
+		col_names = BMMySQL().filter_column_names("user", data)
+		update_list = []
+		for key in col_names:
+			if data[key] is not None:
+				update_list.append("`" + key + "`" + " = \"" + BMMySQL().db.escape_string(data[key]) + "\"")
+		if len(update_list) == 0:
+			return False
+		cur.execute("UPDATE user SET " + ", ".join(update_list) + " WHERE bm = %s", (self.bm))
+		#print ("UPDATE user SET " + ", ".join(update_list) + " WHERE bm = %s" % (self.bm))
+		if cur.rowcount == 1:
+			return True
+		else:
+			return False
+
 	def setlastrelay(self, lastrelay = None):
 		BMMySQL().db.ping(True)
 		cur = BMMySQL().db.cursor()
@@ -108,6 +125,75 @@ class GWUser(object):
 		else:
 			logging.warning('Failure setting lastrelay for (%u)', self.uid)
 		cur.close()
+
+class GWUserData(object):
+
+	@staticmethod
+	def zero_one(text):
+		text = text.lower()
+		if text in ("1", "on", "true", "yes"):
+			return "1"
+		if text in ("0", "off", "false", "no"):
+			return "0"
+		else:
+			return None
+	@staticmethod
+	def pgp(text):
+		text = text.lower()
+		if text in ("server"):
+			return "1"
+		if text in ("local"):
+			return "0"
+		else:
+			return GWUserData.zero_one(text)
+
+	@staticmethod
+	def is_float(text):
+		try:
+			i = float(text)
+			return True
+		except (ValueError, TypeError):
+			return False
+		return False
+
+	@staticmethod
+	def numeric(text, decimals = 0):
+		if decimals == 0:
+			return text if text.isdigit else None
+		elif isinstance(decimals, int) and decimals > 0 and decimals < 10:
+			if GWUserData.is_float(text):
+			 	return str(round(float(text),decimals))
+			else:
+				return None
+		else:
+			return None
+
+	@staticmethod
+	def public_seed(text):
+		if not text.isalnum():
+			return None
+		# BIP32
+		elif text[:4] == "xpub" and len(text) <= 112 and len(text) >= 100:
+			return text
+		# electrum
+		elif len(text) == 32 or len(text) == 64:
+			return text
+		else:
+			return None
+
+	@staticmethod
+	def currency(text):
+		text = text.lower()
+		if text in ("usd", "dollar"):
+			return "USD"
+		elif text in ("gbp", "pound", "sterling"):
+			return "GBP"
+		elif text in ("eur", "euro"):
+			return "EUR"
+		elif text in ("btc", "xbt", "bitcoin", "bitcoins"):
+			return "BTC"
+		else:
+			return "BTC"
 
 class GWAlias(object):
 	def __init__(self, email = None, alias = None):
