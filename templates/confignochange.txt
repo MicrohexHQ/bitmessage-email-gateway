@@ -1,0 +1,16 @@
+Subject: Configuration NOT changed
+
+The configuration has not been changed, it didn't contain any valid settings.
+
+Valid settings are:
+
+pgp: server or local
+attachments: yes or no
+flags: numeric
+archive: yes or no
+masterpubkey_btc: public key seed (electrum or BIP32)
+offset_btc: numeric (defaults to 0)
+feeamount: floating point fee amount
+feecurrency: USD, GPB, EUR or BTC
+
+${timestamp}

@@ -1,0 +1,6 @@
+Subject: Configuration changed
+
+The configuration has been changed. In order to review the current settings,
+reply with the subject "status".
+
+${timestamp}
