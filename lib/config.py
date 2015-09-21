@@ -32,6 +32,10 @@ class BaseBMConfig(object):
 				"encrypt": "boolean",
 				"delete_expired_delay": "int"
 			},
+			"default": {
+				"attachments": "boolean",
+				"pgp": "boolean"
+			},
 			"bitcoind": {
 				"port": "int"
 			}
