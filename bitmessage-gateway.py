@@ -140,6 +140,12 @@ def send_email(recipient, sender, subject, body, bm_id, userdata = None):
 	msg['To'] = recipient
 	msg['Subject'] = subject
 
+	## Signature
+	if BMConfig().get("bmgateway", "bmgateway", "signature") is not None:
+		body += "-- \n" + \
+			BMConfig().get("bmgateway", "bmgateway", "signature") + \
+			"\n"
+
 	enc_body = None
 	sender_key = None
 	recipient_key = None
