@@ -128,6 +128,20 @@ class GWUser(object):
 			logging.warning('Failure setting lastrelay for (%u)', self.uid)
 		cur.close()
 
+	def setlastackreceived(self, lastackreceived = None):
+		BMMySQL().db.ping(True)
+		cur = BMMySQL().db.cursor()
+		filterwarnings('ignore', category = MySQLdb.Warning)
+		if lastackreceived == None:
+			cur.execute ("UPDATE user SET lastackreceived = UNIX_TIMESTAMP() WHERE uid = %s", (self.uid))
+		else:
+			cur.execute ("UPDATE user SET lastackreceived = %s WHERE uid = %s", (lastackreceived, self.uid))
+		if (cur.rowcount == 1):
+			logging.debug('Set lastackreceived for (%u)', self.uid)
+		else:
+			logging.warning('Failure setting lastackreceived for (%u)', self.uid)
+		cur.close()
+
 class GWUserData(object):
 
 	@staticmethod

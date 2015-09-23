@@ -615,6 +615,11 @@ def check_bmoutbox(intcond):
 		## loop through messages to find unread
 		for a_message in all_messages:
 			if a_message['status'] == 'ackreceived':
+				#lastActionTime
+				#toAddress
+				userdata = lib.user.GWUser(bm = a_message['toAddress'])
+				if userdata:
+					userdata.setlastackreceived(a_message['lastActionTime'])
 				BMMessage.deleteStatic(a_message['msgid'], folder = "outbox")
 
 		logging.info("Vacuuming DB")
