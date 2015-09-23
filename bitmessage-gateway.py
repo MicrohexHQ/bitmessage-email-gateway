@@ -615,8 +615,6 @@ def check_bmoutbox(intcond):
 		## loop through messages to find unread
 		for a_message in all_messages:
 			if a_message['status'] == 'ackreceived':
-				#lastActionTime
-				#toAddress
 				userdata = lib.user.GWUser(bm = a_message['toAddress'])
 				if userdata:
 					userdata.setlastackreceived(a_message['lastActionTime'])
@@ -738,6 +736,7 @@ def handle_email(k):
 	body_raw = ''
 	decrypt_ok = False
 	sigverify_ok = False
+	mega_fileids = []
 
 	# DKIM
 	ar = msg_tmp.get_param("dkim", "missing", "Authentication-Results")
@@ -911,7 +910,8 @@ def handle_email(k):
 					filename = part.get_filename()
 					encoding = False
 
-				file_id, link = lib.bmmega.mega_upload(userdata.bm, filename, part.get_payload(decode = 1))
+				fileid, link = lib.bmmega.mega_upload(userdata.bm, filename, part.get_payload(decode = 1))
+				mega_fileids.add(fileid)
 				if encoding:
 					filename = unicode(filename, encoding)
 				logging.info("Attachment \"%s\" (%s)", filename, part.get_content_type())
@@ -929,9 +929,13 @@ def handle_email(k):
 
 	logging.info('Incoming email from %s to %s', msg_sender, msg_recipient)
 
-	if SendBM(bm_from_address, bm_to_address,
+	sent = SendBM(bm_from_address, bm_to_address,
 		'MAILCHUCK-FROM::' + msg_sender + ' | ' + msg_subject.encode('utf-8'),
-		msg_body.encode('utf-8')).status:
+		msg_body.encode('utf-8'))
+	if sent.status:
+		for fileid in mega_fileids:
+			# cur.execute ("UPDATE mega SET ackdata = %s WHERE fileid = %s AND ackdata IS NULL", (ackdata.decode("hex"), fileid))
+			pass
 		## remove email file
 		if userdata.archive == 1:
 			#print msg_body

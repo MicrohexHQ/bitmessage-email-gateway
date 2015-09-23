@@ -57,11 +57,23 @@ def mega_upload(bm, fname, data):
 	cur.close()
 	return file_id, link
 
+def search_fileids(ackdata):
+	fileids = []
+	# cur.execute("SELECT fileid FROM mega WHERE ackdata = %s", (ackdata.decode("hex")))
+	# cur.close()
+	# loop results
+	
+	return fileids
+
 def mega_delete(file_id):
 	m = mega_login()
 	if m == None:
 		return False
 	retval = m.delete(file_id)
+	#if retval == 0:
+		# cur.execute("DELETE FROM mega WHERE fileid = %s", (file_id))
+		# cur.close()
+
 	return retval
 
 # download from an url

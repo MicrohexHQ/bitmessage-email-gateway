@@ -15,6 +15,7 @@ class SendBM(object):
 		self.subject = base64.b64encode(subject)
 		self.body = base64.b64encode(body)
 		self.status = False
+		self.ackdata = None
 		if (sender[0:3] == "BM-"):
 			senderbm = sender
 		else:
@@ -27,6 +28,7 @@ class SendBM(object):
 		try:
 			ackData = BMAPI().conn().sendMessage(recipientbm, senderbm, self.subject, self.body, 2)
 			logging.info("Sent BM from %s to %s: %s", sender, recipient, ackData)
+			self.ackdata = ackData
 			self.status = True
 		except:
 			logging.error("Failure sending BM from %s to %s", sender, recipient)
