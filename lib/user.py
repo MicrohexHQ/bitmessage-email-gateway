@@ -71,8 +71,8 @@ class GWUser(object):
 		filterwarnings('ignore', category = MySQLdb.Warning)
 		pgp = 1 if BMConfig().get("bmgateway", "default", "pgp") else 0
 		attachments = 1 if BMConfig().get("bmgateway", "default", "attachments") else 0
-		cur.execute ("""INSERT IGNORE INTO user (bm, email, postmap, domain, pgp, credits, exp, active, cansend, cancharge, caninvoice, attachments)
-				VALUES (%s, %s, %s, %s, %s, '0', '1971-01-01', 1, 1, 0, 0, %s)""", (bm, email, postmap, domain, pgp, attachments))
+		cur.execute ("""INSERT IGNORE INTO user (bm, email, postmap, domain, pgp, credits, exp, active, cansend, cancharge, caninvoice, attachments, lastackreceived)
+				VALUES (%s, %s, %s, %s, %s, '0', '1971-01-01', 1, 1, 0, 0, %s, UNIX_TIMESTAMP(NOW()))""", (bm, email, postmap, domain, pgp, attachments))
 		uid = None
 		if cur.rowcount == 1:
 			uid = cur.lastrowid
