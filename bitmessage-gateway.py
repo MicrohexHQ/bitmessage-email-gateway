@@ -756,7 +756,7 @@ def handle_email(k):
 				if userdata.flags & 1 == 1:
 					pgpparts = part_str.split("-----")
 					# hack for absent pgp
-					if len(pgpparts < 4):
+					if not pgpparts or len(pgpparts) < 4:
 						continue
 					state = 0
 					pgp_body = ""
