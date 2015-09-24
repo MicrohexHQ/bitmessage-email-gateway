@@ -757,6 +757,14 @@ def handle_email(k):
 					pgpparts = part_str.split("-----")
 					# hack for absent pgp
 					if not pgpparts or len(pgpparts) < 4:
+						if part.get_content_charset():
+							msg_body += part_str.decode(part.get_content_charset())
+						else:
+							charset = chardet.detect(part_str)
+							if charset['encoding']:
+								msg_body += part_str.decode(charset['encoding'])
+							else:
+								msg_body += part_str.decode('ascii')
 						continue
 					state = 0
 					pgp_body = ""
