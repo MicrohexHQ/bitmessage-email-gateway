@@ -129,6 +129,9 @@ class GWUser(object):
 		cur.close()
 
 	def setlastackreceived(self, lastackreceived = None):
+		# for example user deleted
+		if self.uid is None:
+			return
 		BMMySQL().db.ping(True)
 		cur = BMMySQL().db.cursor()
 		filterwarnings('ignore', category = MySQLdb.Warning)
@@ -139,7 +142,7 @@ class GWUser(object):
 		if (cur.rowcount == 1):
 			logging.debug('Set lastackreceived for (%u)', self.uid)
 		else:
-			logging.warning('Failure setting lastackreceived for (%u)', self.uid)
+			logging.warning('Failure setting lastackreceived for (%u)', self.uid or -1)
 		cur.close()
 
 class GWUserData(object):
