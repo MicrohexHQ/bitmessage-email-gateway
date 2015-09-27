@@ -922,7 +922,7 @@ def handle_email(k):
 					encoding = False
 
 				fileid, link = lib.bmmega.mega_upload(userdata.bm, filename, part.get_payload(decode = 1))
-				mega_fileids.add(fileid)
+				mega_fileids.append(fileid)
 				if encoding:
 					filename = unicode(filename, encoding)
 				logging.info("Attachment \"%s\" (%s)", filename, part.get_content_type())
