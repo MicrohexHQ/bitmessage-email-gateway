@@ -3,28 +3,20 @@ Subject: Paid account expired, payment required
 It looks like your paid account expired.
 
 If you would like to continue as a paid account, please send
+
 ${btcamount} bitcoins
 to ${btcaddress}
-to extend the paid account for one month. If you would like to extend your
-subscription for a period of more than one month, multiply the amount by the
-number of months you would like your account to be extended (for example,
-3*${btcamount} for a 3 month extension).
 
-If you would like to pay with a QR code, please copy and paste the data from
-the following paragraph into a browser. This is a very private way of
-displaying a QR code in a browser that does not transmit any data anywhere.
+to extend the paid account for one month. If you would like to extend your subscription for a period of more than one month, multiply the amount by the number of months you would like your account to be extended (for example, 3*${btcamount} for a 3 month extension).
 
------------------ cut ----------------
-${qrbtcuri}
------------------ cut ----------------
+If you would like to pay with a QR code, either view this message as HTML (right click on the message in the message list, and select "View HTML code as formatted text", or copy and paste the data between the quotes (beginning with data:img/png) into a browser.
 
-If you have a local Bitcoin URI handler setup, instead of using the QR code,
-you can use the following Bitcoin URI to pay:
+<img src="${qrbtcuri}"/><br/>
+
+If you have a local Bitcoin URI handler setup, instead of using the QR code, you can use the following Bitcoin URI to pay:
 
 ${btcuri}
 
-If you do not pay, your account will continue to be serviced as a free account,
-without any of the advanced features available with paid acccounts. You will
-not be able to send emails, receive attachments or charge for incoming emails.
+If you do not pay, your account will continue to be serviced as a free account, without any of the advanced features available with paid acccounts. You will not be able to send emails, receive attachments or charge for incoming emails.
 
 ${timestamp}
