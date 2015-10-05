@@ -327,6 +327,10 @@ def check_bminbox(intcond):
 				else:
 					logging.warn('Purged malicious deregistration bitmessage from ' + message['fromAddress'])
 	
+			elif field_in_list(message, BMAPI().address_list, 'toAddress', 'bug_report_address_label'):
+				userdata = lib.user.GwUser(bm = message['fromAddress'])
+				# if not, create a fake one
+				# relay to ticket
 	
 			## check if receive address is a registration request
 			elif field_in_list(message, BMAPI().address_list,
@@ -411,7 +415,8 @@ def check_bminbox(intcond):
 							recipient = message['fromAddress'],
 							template = "command-invalid",
 							addmaps = {
-								'email': proposed_registration_user
+								'command': command,
+								'email': userdata.email
 							})
 					
 				else: # attempt to register new user
