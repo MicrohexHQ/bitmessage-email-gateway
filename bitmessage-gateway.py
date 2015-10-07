@@ -938,7 +938,8 @@ def handle_email(k):
 		if not sigverify_ok:
 			msg_body = "WARNING: PGP signature missing or invalid. The authenticity of the message could not be verified.\n" + msg_body
 	else:
-		msg_body = "WARNING: Server-side PGP is off, passing message as it is.\n" + msg_body
+		# msg_body = "WARNING: Server-side PGP is off, passing message as it is.\n" + msg_body
+		pass
 		
 	if not ar[0:4] == "pass":
 		msg_body = "WARNING: DKIM signature missing or invalid. The email may not have been sent through legitimate servers.\n" + msg_body
