@@ -872,16 +872,21 @@ def handle_email(k):
 	## if there's no plaintext or html, check if it's encrypted
 	# PGP/MIME
 	has_encrypted_parts = False
-	if not msg_body and userdata.pgp == 1:
+	if not msg_body:
 		for part in msg_tmp.walk():
 			if part.get_content_type() == 'application/pgp-encrypted':
 				has_encrypted_parts = True
 				# import from sql if necessary
-				lib.gpg.check_key(msg_recipient)
+				if userdata.pgp == 1:
+					lib.gpg.check_key(msg_recipient)
 
 			## look for encrypted attachment containing text
 			if part.get_content_type() == 'application/octet-stream' and has_encrypted_parts:
 				part_str = part.get_payload(decode=1)
+
+				if userdata.pgp == 0:
+					msg_body += part_str
+					continue
 
 				## if we see the pgp header, decrypt
 				if 'BEGIN PGP MESSAGE' in part_str:
@@ -907,9 +912,17 @@ def handle_email(k):
 				else:
 					logging.debug("Received application/octet-stream type in inbound email, but did not see encryption header")
 
-	if not sigverify_ok and userdata.pgp == 1:
+	if not sigverify_ok:
 		for part in msg_tmp.walk():
 			if part.get_content_type() == 'application/pgp-signature':
+
+				if userdata.pgp == 0:
+					msg_body = '-----BEGIN PGP SIGNED MESSAGE-----\n' + msg_body
+					msg_body += '\n-----BEGIN PGP SIGNATURE-----\n'
+					msg_body += part.get_payload(decode=1)
+					msg_body += '\n-----END PGP SIGNATURE-----\n'
+					continue
+
 				# import from sql if necessary
 				lib.gpg.check_key(msg_recipient)
 				plain, sigverify_ok = lib.gpg.verify(body_raw, msg_sender, msg_recipient, part.get_payload(decode=1))
