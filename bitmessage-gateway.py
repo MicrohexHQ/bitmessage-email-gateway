@@ -30,6 +30,7 @@ from lib.bmapi import BMAPI
 from lib.sendbm import SendBMTemplate, SendBM
 from lib.bmmessage import BMMessage
 import lib.maintenance
+import lib.charset
 import lib.user
 import random
 from subprocess import call
@@ -45,8 +46,6 @@ from email.mime.text import MIMEText
 from email.header import Header
 from email import Charset
 from email.generator import Generator
-
-import chardet
 
 try:
 	import pyinotify
@@ -764,14 +763,7 @@ def handle_email(k):
 					pgpparts = part_str.split("-----")
 					# hack for absent pgp
 					if not pgpparts or len(pgpparts) < 4:
-						if part.get_content_charset():
-							msg_body += part_str.decode(part.get_content_charset())
-						else:
-							charset = chardet.detect(part_str)
-							if charset['encoding']:
-								msg_body += part_str.decode(charset['encoding'])
-							else:
-								msg_body += part_str.decode('ascii')
+						msg_body += lib.charset.safeDecode(part_str, part.get_content_charset(None))
 						continue
 					state = 0
 					pgp_body = ""
@@ -815,16 +807,9 @@ def handle_email(k):
 							logging.info("Verifying PGP signature from " + msg_sender + " to " + msg_recipient + ": " + sigresult)
 							state = 0
 						elif state == 0:
-							if part.get_content_charset():
-								msg_body += pgppart.decode(part.get_content_charset())
-							else:
-								charset = chardet.detect(pgppart)
-								if charset['encoding']:
-									msg_body += pgppart.decode(charset['encoding'])
-								else:
-									msg_body += pgppart.decode('ascii')
+							msg_body += lib.charset.safeDecode(pgppart, part.get_content_charset(None))
 						elif state > 0:
-							pgp_body += pgppart
+							pgp_body += lib.charset.safeDecode(pgppart, part.get_content_charset(None))
 				else:
 					if "BEGIN PGP MESSAGE" in part_str:
 						# import from sql if necessary
@@ -849,12 +834,7 @@ def handle_email(k):
 			body_raw += part.as_string(False)
 			#print part.get_content_charset()
 			#print msg_tmp.get_charset()
-			if part.get_content_charset():
-				try:
-					part_str = part_str.decode(part.get_content_charset())
-				except:
-					charset = chardet.detect(part_str)
-					part_str = part_str.decode(charset['encoding'])
+			part_str += lib.charset.safeDecode(part_str, part.get_content_charset(None))
 			msg_body += part_str
 	
 	## if there's no plaintext content, convert the html
@@ -864,11 +844,7 @@ def handle_email(k):
 				part_str = part.get_payload(decode=1)
 				h = html2text.HTML2Text()
 				h.inline_links = False
-				if part.get_content_charset():
-					msg_body += h.handle(part_str.decode(part.get_content_charset()))
-				else:
-					charset = chardet.detect(part_str)
-					msg_body += h.handle(part_str.decode(charset['encoding']))
+				msg_body += h.handle(lib.charset.safeDecode(part_str, part.get_content_charset(None)))
 				#msg_body = msg_body + html2text.html2text(unicode(part.get_payload(), part.get_content_charset()))		
 	
 	## if there's no plaintext or html, check if it's encrypted
