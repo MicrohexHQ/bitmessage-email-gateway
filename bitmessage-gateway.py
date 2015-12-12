@@ -112,6 +112,7 @@ def get_inbox():
 			messages = json.loads(BMAPI().conn().getAllInboxMessages())['inboxMessages']
 		except:
 			logging.warn('Could not read inbox messages via API %s. Retrying...', sys.exc_info()[0])
+			BMAPI().disconnect()
 			time.sleep(random.random()+0.5)
 			continue
 		break
@@ -123,6 +124,7 @@ def get_outbox():
 			messages = json.loads(BMAPI().conn().getAllSentMessages())['sentMessages']
 		except:
 			logging.warn('Could not read outbox messages via API %s. Retrying...', sys.exc_info()[0])
+			BMAPI().disconnect()
 			time.sleep(random.random()+0.5)
 			continue
 		break

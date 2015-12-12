@@ -62,5 +62,8 @@ class BaseBMAPI(object):
 	def conn(self):
 		return self.check_connection()
 
+	def disconnect(self):
+		self.thrdata.conn = None
+
 class BMAPI(BaseBMAPI):
 	__metaclass__ = lib.singleton.Singleton
