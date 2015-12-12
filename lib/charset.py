@@ -15,8 +15,8 @@ def safeDecode(text, charset = None):
 		except:
 			pass
 	try:
-		detected_charset = charded.detect(text)
+		detected_charset = chardet.detect(text)
 		if detected_charset['encoding']:
-			return text.decode(detected_charset['encoding'])
+			return text.decode(detected_charset['encoding'], errors='replace')
 	except:
 		raise SafeDecodeError("SafeDecode failed to detect charset")

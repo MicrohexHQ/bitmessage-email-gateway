@@ -730,15 +730,14 @@ def handle_email(k):
 	if msg_tmp.get_content_type() == "multipart/report" and msg_tmp.get_param("report-type", "") == "delivery-status" and msg_tmp.get("Auto-Submitted", "") == "auto-replied":
 		for part in msg_tmp.walk():
 			if part and part.get_content_type() == 'message/delivery-status':
-				part_str = part.get_payload(decode = 0)
-				for subpart in part_str:
+				for subpart in part.get_payload(decode = 0):
 					if subpart.get("Action", "") in ("relayed", "delivered", "expanded"):
 						logging.info ("Successful DSN from " + bm_to_address)
 						lib.user.GWUser(bm = bm_to_address).setlastrelay(lastrelay = time.time())
 						delete_email(k)
 						return
 
-	msg_body = ''
+	msg_body = u''
 	body_raw = ''
 	decrypt_ok = False
 	sigverify_ok = False
@@ -834,7 +833,7 @@ def handle_email(k):
 			body_raw += part.as_string(False)
 			#print part.get_content_charset()
 			#print msg_tmp.get_charset()
-			part_str += lib.charset.safeDecode(part_str, part.get_content_charset(None))
+			part_str = lib.charset.safeDecode(part_str, part.get_content_charset(None))
 			msg_body += part_str
 	
 	## if there's no plaintext content, convert the html
