@@ -9,6 +9,7 @@ import logging
 import time
 from lib.config import BMConfig
 from lib.mysql import BMMySQL
+import lib.unicode
 import MySQLdb
 from BeautifulSoup import BeautifulSoup
 import datetime
@@ -95,7 +96,7 @@ def gpg_init():
 ## encrypt text
 def encrypt_text(text, recipient_key, sender_key = None):
 	global gpgme
-	plain = pyme.core.Data(text)
+	plain = pyme.core.Data(lib.unicode.to_string(text))
 	encrypted = pyme.core.Data()
 	if sender_key:
 		gpgme.signers_clear()
@@ -120,7 +121,7 @@ def encrypt_text(text, recipient_key, sender_key = None):
 def sign_text(text, key):
 #	global gpg
 	global gpgme
-	plain = pyme.core.Data(text)
+	plain = pyme.core.Data(lib.unicode.to_string(text))
 	signed = pyme.core.Data()
 	gpgme.signers_clear()
 	if key.can_sign:
@@ -391,7 +392,7 @@ def check_key(address, whatreturn="keyid", operation="any", expired=False):
 def verify(signed, msg_sender, msg_recipient, detached_sig = None):
 	global gpgme
 	plain = pyme.core.Data()
-	cipher = pyme.core.Data(signed)
+	cipher = pyme.core.Data(lib.unicode.to_string(signed))
 	retval = signed
 
 	check_key (msg_sender, whatreturn = "key", operation = "any")
@@ -435,7 +436,7 @@ def verify_parse(msg_sender):
 def decrypt_content(encrypted, msg_sender, msg_recipient, multi = False):
 	global gpgme
 	plain = pyme.core.Data()
-	cipher = pyme.core.Data(encrypted)
+	cipher = pyme.core.Data(lib.unicode.to_string(encrypted))
 	decrypted = ""
 	decrypted_raw = ""
 	detached_sig = None
