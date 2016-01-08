@@ -683,7 +683,7 @@ def handle_email(k):
 			userdata = lib.user.GWUser(email = msg_recipient, unalias = True)
 
 	## check if we have a recipient address for the receiving email
-	if not userdata.check():
+	if not userdata or not userdata.check():
 		## look for X-Original-To instead
 		rcpts = re.findall(r'[\w\.+-]+@[\w\.-]+.[\w]+', msg_headers["X-Original-To"])
 		if len(rcpts) > 0:
