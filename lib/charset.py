@@ -9,6 +9,8 @@ class SafeDecodeError(Exception):
 def safeDecode(text, charset = None):
 	if isinstance(text, unicode):
 		return text
+	if len(text) == 0:
+		return u""
 	if charset is not None:
 		try:
 			return text.decode(charset)
