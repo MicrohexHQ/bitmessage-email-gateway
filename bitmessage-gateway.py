@@ -721,7 +721,7 @@ def handle_email(k):
 	if(msg_subject[1]):
 		msg_subject = unicode(msg_subject[0], msg_subject[1])
 	else:
-		msg_subject = msg_subject[0]
+		msg_subject = lib.charset.safeDecode(msg_subject[0])
 
 	## find message body contents in plaintext
 	msg_tmp = email.message_from_string(msg_raw)
