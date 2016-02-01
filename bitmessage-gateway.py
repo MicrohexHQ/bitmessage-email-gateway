@@ -896,7 +896,7 @@ def handle_email(k):
 				if userdata.pgp == 0:
 					msg_body = '-----BEGIN PGP SIGNED MESSAGE-----\n' + msg_body
 					msg_body += '\n-----BEGIN PGP SIGNATURE-----\n'
-					msg_body += part.get_payload(decode=1)
+					msg_body += part.get_payload(decode=0)
 					msg_body += '\n-----END PGP SIGNATURE-----\n'
 					continue
 
