@@ -58,6 +58,7 @@ def create_invoice_domain (domain, payer):
 			# Electrum 1.x
 			pubkey = bitcoin.electrum_pubkey(result['masterpubkey_btc'], result['offset_btc'])
 		address = bitcoin.pubkey_to_address(pubkey)
+		bitcoind_importaddress(address)
 		cur.execute ("UPDATE domain SET offset_btc = offset_btc + 1 WHERE name = %s AND active = 1 AND masterpubkey_btc = %s", (domain, result['masterpubkey_btc']))
 		if result['feecurrency'] in ("USD", "GBP", "EUR"):
 			result['feeamount'] /= decimal.Decimal(get_bitcoin_price(result['feecurrency']))
@@ -71,7 +72,6 @@ def create_invoice_domain (domain, payer):
 				result = row
 			continue
 		
-		bitcoind_importaddress(address)
 		cur.close()
 		return address, result['feeamount'];
 	cur.close()
@@ -95,11 +95,11 @@ def create_invoice_user (email):
 			# Electrum 1.x
 			pubkey = bitcoin.electrum_pubkey(result['masterpubkey_btc'], result['offset_btc'])
 		address = bitcoin.pubkey_to_address(pubkey)
+		bitcoind_importaddress(address)
 		cur.execute ("UPDATE user SET offset_btc = offset_btc + 1 WHERE email = %s AND active = 1 AND masterpubkey_btc = %s", (email, result['masterpubkey_btc']))
 		if result['feecurrency'] in ("USD", "GBP", "EUR"):
 			result['feeamount'] /= decimal.Decimal(get_bitcoin_price(result['feecurrency']))
 		cur.execute ("INSERT INTO invoice (issuer, address, coin, amount, type, paid) VALUES (%s, %s, 'BTC', %s, 1, 0)", (result['bm'], address, result['feeamount']))
-		bitcoind_importaddress(address)
 		cur.close()
 		return address, result['feeamount'];
 	cur.close()
