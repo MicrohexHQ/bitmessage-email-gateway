@@ -346,6 +346,7 @@ def check_bminbox(intcond):
 						body = base64.b64decode(message['message'])
 						data = {}
 						for line in body.splitlines():
+							line = re.sub("#.*", "", line)
 							option = re.search("(\S+)\s*:\s*(\S+)", line)
 							if option is None:
 								continue
