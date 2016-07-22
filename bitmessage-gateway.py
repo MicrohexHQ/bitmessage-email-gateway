@@ -838,13 +838,13 @@ def handle_email(k):
 			msg_body += part_str
 	
 	## if there's no plaintext content, convert the html
-	if not msg_body:
+	if not msg_body or userdata.html == 2:
 		for part in msg_tmp.walk():
 			if part and part.get_content_type() == 'text/html' and not (part.has_key("Content-Disposition") and part.__getitem__("Content-Disposition")[:11] == "attachment;"):
 				part_str = part.get_payload(decode=1)
 				h = html2text.HTML2Text()
 				h.inline_links = False
-				if userdata.html == 1:
+				if userdata.html >= 1:
 					msg_body += lib.charset.safeDecode(part_str, part.get_content_charset(None))
 				else:
 					msg_body += h.handle(lib.charset.safeDecode(part_str, part.get_content_charset(None)))
