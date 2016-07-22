@@ -94,6 +94,9 @@ for detail in txinfo['details']:
 						months = incomingamount / invoice['amount']
 					print "Extending for " + str(months) + " months"
 					userdata = GWUser(bm = invoice['payer'])
+					if not hasattr(userdata, "exp"):
+						# user was deleted
+						continue
 					datefrom = userdata.exp if userdata.exp > datetime.date.today() else datetime.date.today()
 					cur.execute ("UPDATE user SET cansend = 1, exp = IF(exp < CURDATE(),DATE_ADD(CURDATE(), INTERVAL " +
 						str(months) + " MONTH),DATE_ADD(exp, INTERVAL " + str(months) +
