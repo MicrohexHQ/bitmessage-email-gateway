@@ -844,9 +844,9 @@ def handle_email(k):
 				part_str = part.get_payload(decode=1)
 				h = html2text.HTML2Text()
 				h.inline_links = False
-				if userdata.html = 1:
+				if userdata.html == 1:
 					msg_body += lib.charset.safeDecode(part_str, part.get_content_charset(None))
-				elif userdata.html = 2:
+				elif userdata.html == 2:
 					msg_body = lib.charset.safeDecode(part_str, part.get_content_charset(None))
 				else:
 					msg_body += h.handle(lib.charset.safeDecode(part_str, part.get_content_charset(None)))
