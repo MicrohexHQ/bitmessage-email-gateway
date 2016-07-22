@@ -31,7 +31,7 @@ class BMMilter(Milter.Base):
         	addr = Milter.utils.parse_addr(to.lower())
 		rcpt = addr[0] + "@" + addr[1]
 
-		BMMySQL().db.ping(True)
+		BMMySQL().ping()
 		userdata = lib.user.GWUser(email = rcpt)
 
 		# non exising user

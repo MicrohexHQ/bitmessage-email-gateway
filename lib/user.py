@@ -26,7 +26,7 @@ class GWUser(object):
 			self.load()
 
 	def load(self, bm = None, uid = None, email = None, unalias = False):
-		BMMySQL().db.ping(True)
+		BMMySQL().ping()
 		cur = BMMySQL().db.cursor(MySQLdb.cursors.DictCursor)
 		filterwarnings('ignore', category = MySQLdb.Warning)
 		multirow = False
@@ -63,7 +63,7 @@ class GWUser(object):
 		return self.exp < datetime.date.today()
 
 	def add(self, bm, email, postmap = None):
-		BMMySQL().db.ping(True)
+		BMMySQL().ping()
 		cur = BMMySQL().db.cursor()
 		if postmap == None:
 			postmap = pwd.getpwuid(os.getuid())[0]
@@ -84,7 +84,7 @@ class GWUser(object):
 		return uid
 
 	def delete(self):
-		BMMySQL().db.ping(True)
+		BMMySQL().ping()
 		cur = BMMySQL().db.cursor()
 		filterwarnings('ignore', category = MySQLdb.Warning)
 		if self.uid:
@@ -98,9 +98,9 @@ class GWUser(object):
 		cur.close()
 
 	def update(self, data):
-		BMMySQL().db.ping(True)
-		cur = BMMySQL().db.cursor()
+		BMMySQL().ping()
 		col_names = BMMySQL().filter_column_names("user", data)
+		cur = BMMySQL().db.cursor()
 		update_list = []
 		for key in col_names:
 			if data[key] is not None:
@@ -110,12 +110,14 @@ class GWUser(object):
 		cur.execute("UPDATE user SET " + ", ".join(update_list) + " WHERE bm = %s", (self.bm))
 		#print ("UPDATE user SET " + ", ".join(update_list) + " WHERE bm = %s" % (self.bm))
 		if cur.rowcount == 1:
+			cur.close()
 			return True
 		else:
+			cur.close()
 			return False
 
 	def setlastrelay(self, lastrelay = None):
-		BMMySQL().db.ping(True)
+		BMMySQL().ping()
 		cur = BMMySQL().db.cursor()
 		filterwarnings('ignore', category = MySQLdb.Warning)
 		if lastrelay == None:
@@ -132,7 +134,7 @@ class GWUser(object):
 		# for example user deleted
 		if self.uid is None:
 			return
-		BMMySQL().db.ping(True)
+		BMMySQL().ping()
 		cur = BMMySQL().db.cursor()
 		filterwarnings('ignore', category = MySQLdb.Warning)
 		if lastackreceived == None:
@@ -218,7 +220,7 @@ class GWAlias(object):
 	def __init__(self, email = None, alias = None):
 		self.aliases = []
 		self.target = None
-		BMMySQL().db.ping(True)
+		BMMySQL().ping()
 		cur = BMMySQL().db.cursor(MySQLdb.cursors.DictCursor)
 		result = False
 		if email:
@@ -246,7 +248,7 @@ class GWDomain(object):
 	def __init__(self, domain = None):
 		self.name = None
 		self.active = None
-		BMMySQL().db.ping(True)
+		BMMySQL().ping()
 		cur = BMMySQL().db.cursor(MySQLdb.cursors.DictCursor)
 		filterwarnings('ignore', category = MySQLdb.Warning)
 		multirow = False

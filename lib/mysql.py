@@ -4,6 +4,7 @@ from lib.config import BMConfig
 import lib.singleton
 import os
 import sys
+import time
 import MySQLdb
 import MySQLdb.converters
 from MySQLdb.constants import FIELD_TYPE
@@ -52,13 +53,24 @@ class BaseBMMySQL(object):
 				print "No host or unix socket in mysql definition for " + mysql
 		return False
 
+	def ping(self):
+		ok = False
+		while not ok:
+			try:
+				self.db.ping(True)
+				ok = True
+			except:
+				if not self.connect():
+					time.sleep(5)
+
 	def filter_column_names (self, table, data):
-		self.db.ping(True)
+		self.ping()
 		cur = self.db.cursor()
 		cur.execute("SHOW COLUMNS FROM user")
 		all_column_names = {}
 		for row in cur.fetchall():
 			all_column_names[row[0]] = True
+		cur.close()
 		column_names = {}
 		for key in data:
 			if key in all_column_names:
