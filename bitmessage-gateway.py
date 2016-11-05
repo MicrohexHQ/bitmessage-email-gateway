@@ -15,6 +15,7 @@ import json
 import smtplib
 import base64
 import email
+import fcntl
 import html2text
 import lib.gpg
 import lib.bmsignal
@@ -958,37 +959,52 @@ def handle_email(k):
 
 class InotifyEventHandler(pyinotify.ProcessEvent):
 	def process_default(self, event):
-		if (os.path.isfile(event.pathname)):
+		if os.path.isfile(event.pathname):
 			# to avoid crashes from taking down the whole processing, in the future for parallel processing
+			fhandle = open (event.pathname, 'r')
+			fcntl.flock(fhandle, fcntl.LOCK_EX)
 			email_thread = threading.Thread(target=handle_email, name='EmailIn', args=(event.name,))
 			email_thread.start()
-			#email_thread.join()
+			email_thread.join()
+			fcntl.flock(fhandle, fcntl.LOCK_UN)
+			fhandle.close()
 
 def inotify_incoming_emails():
-	dir = BMConfig().get("bmgateway", "bmgateway", "mail_folder")
-	check_emails(None)
+	mdir = BMConfig().get("bmgateway", "bmgateway", "mail_folder")
 
 	wm = pyinotify.WatchManager()
 	notifier = pyinotify.ThreadedNotifier(wm, InotifyEventHandler())
 	notifier.setName ("Inotify")
-	wm.add_watch (dir, pyinotify.IN_CREATE|pyinotify.IN_CLOSE_WRITE|pyinotify.IN_MOVED_TO)
-	#wm.add_watch (dir, pyinotify.ALL_EVENTS, rec=True)
+	wm.add_watch (mdir, pyinotify.IN_CREATE|pyinotify.IN_CLOSE_WRITE|pyinotify.IN_MOVED_TO)
+	#wm.add_watch (mdir, pyinotify.ALL_EVENTS, rec=True)
 	return notifier
 
 ## check for new mail to process
-def check_emails(intcond):
+def check_emails(intcond=None):
 	## find new messages in folders
-	dir = os.listdir(BMConfig().get("bmgateway", "bmgateway", "mail_folder"))
+	mdir = os.listdir(BMConfig().get("bmgateway", "bmgateway", "mail_folder"))
 
 	## no new mail
-	if not dir:
+	if not mdir:
 		return
 
 	## iterate through new messages, each in thread so that crashes do not prevent continuing
-	for k in dir:
+	for k in mdir:
+		atime = os.stat(os.path.join(BMConfig().get("bmgateway", "bmgateway", "mail_folder"), k)).st_atime
+		if atime > time.time() - 10:
+			continue
+		fhandle = open (os.path.join(BMConfig().get("bmgateway", "bmgateway", "mail_folder"), k), 'r')
+		try:
+			fcntl.flock(fhandle, fcntl.LOCK_EX|fcntl.LOCK_NB)
+		except IOError:
+			fhandle.close()
+			# locked, skip this time
+			continue
 		email_thread = threading.Thread(target=handle_email, name="EmailIn", args=(k,))
 		email_thread.start()
 		email_thread.join()
+		fcntl.flock(fhandle, fcntl.LOCK_UN)
+		fhandle.close()
 
 if not BMMySQL().connect():
 	print "Failed to connect to mysql"
@@ -1022,6 +1038,7 @@ else:
 	milter_thread = threading.Thread()
 	maintenance_thread = threading.Thread()
 	email_thread = threading.Thread()
+	inotify_thread = threading.Thread()
 	bminbox_thread = threading.Thread()
 	bmoutbox_thread = threading.Thread()
 
@@ -1034,14 +1051,15 @@ else:
 
 	## run managers in threads
 	while not interrupted:
-		if BMConfig().get("bmgateway", "bmgateway", "incoming_thread") and not email_thread.isAlive():
-			if email_thread.ident is not None:
-				email_thread.join()
-			if have_inotify:
-				email_thread = inotify_incoming_emails()
-			else:
+		if BMConfig().get("bmgateway", "bmgateway", "incoming_thread"):
+			if not email_thread.isAlive():
+				if email_thread.ident is not None:
+					email_thread.join()
 				email_thread = threading.Thread(target=check_emails, name="EmailIn", args=(intcond,))
-			email_thread.start()
+				email_thread.start()
+			if have_inotify and not inotify_thread.isAlive():
+				inotify_thread = inotify_incoming_emails()
+				inotify_thread.start()
 		if BMConfig().get("bmgateway", "bmgateway", "outgoing_thread"):
 			if not bminbox_thread.isAlive():
 				if bminbox_thread.ident is not None:
@@ -1083,8 +1101,9 @@ else:
 	intcond.release()
 
 	if BMConfig().get("bmgateway", "bmgateway", "incoming_thread"):
-		if have_inotify and email_thread.isAlive:
-			email_thread.stop()
+		if have_inotify and inotify_thread.isAlive:
+			inotify_thread.stop()
+			inotify_thread.join()
 		email_thread.join()
 
 	if BMConfig().get("bmgateway", "bmgateway", "outgoing_thread"):
