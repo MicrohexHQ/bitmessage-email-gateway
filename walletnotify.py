@@ -58,8 +58,7 @@ client = jsonrpclib.Server('http://' + cfg['rpcuser'] + ":" + cfg['rpcpassword']
 txinfo = client.gettransaction(txid, True)
 
 BMLogging()
-BMMySQL().connect()
-cur = BMMySQL().db.cursor(MySQLdb.cursors.DictCursor)
+cur = BMMySQL().conn().cursor(MySQLdb.cursors.DictCursor)
 while BMAPI().conn() is False:
 	print "Failure connecting to API, sleeping..."
 	time.sleep(random.random()+0.5)

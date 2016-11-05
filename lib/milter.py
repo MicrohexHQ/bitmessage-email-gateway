@@ -31,7 +31,6 @@ class BMMilter(Milter.Base):
         	addr = Milter.utils.parse_addr(to.lower())
 		rcpt = addr[0] + "@" + addr[1]
 
-		BMMySQL().ping()
 		userdata = lib.user.GWUser(email = rcpt)
 
 		# non exising user
@@ -45,7 +44,7 @@ class BMMilter(Milter.Base):
 		h.update (self.mailfrom + "!" + rcpt);
 		digest = h.digest()
 
-		cur = BMMySQL().db.cursor(MySQLdb.cursors.DictCursor)
+		cur = BMMySQL().conn().cursor(MySQLdb.cursors.DictCursor)
 
 		cur.execute("SELECT id, status FROM sendercharge WHERE hash = %s", (digest))
 		

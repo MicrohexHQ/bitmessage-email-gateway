@@ -4,11 +4,12 @@ from lib.mysql import BMMySQL
 
 class MaintenanceThread (object):
 	def getSchedule(key):
-		cur = BMMySQL().db.cursor(MySQLdb.cursors.DictCursor)
+		cur = BMMySQL().conn().cursor(MySQLdb.cursors.DictCursor)
 		cur.execute ("SELECT ts FROM schedules WHERE id = %s", (key))
 		ret = None
 		for row in cur.fetchall():
 			ret = row['ts']
+		cur.close()
 		return ret
 
 	def sanitisePayments():

@@ -220,21 +220,23 @@ def key_to_mysql(key):
 
 	rowcount = 0
 
-	cur = BMMySQL().db.cursor()
+	cur = BMMySQL().conn().cursor()
 	cur.execute ("INSERT INTO gpg (email, fingerprint, private, exp, data) VALUES (%s, %s, %s, FROM_UNIXTIME(%s), %s) ON DUPLICATE KEY UPDATE exp = VALUES(exp), data = VALUES(data)",
 		(key.uids[0].email, key.subkeys[0].fpr, 0, key.subkeys[0].expires, public))
 	rowcount += cur.rowcount
 	cur.execute ("INSERT INTO gpg (email, fingerprint, private, exp, data) VALUES (%s, %s, %s, FROM_UNIXTIME(%s), %s) ON DUPLICATE KEY UPDATE exp = VALUES(exp), data = VALUES(data)",
 		(key.uids[0].email, key.subkeys[0].fpr, 1, key.subkeys[0].expires, secret))
 	rowcount += cur.rowcount
+	cur.close()
 	return rowcount
 
 def key_from_mysql(key):
-	cur = BMMySQL().db.cursor(MySQLdb.cursors.DictCursor)
+	cur = BMMySQL().conn().cursor(MySQLdb.cursors.DictCursor)
 	logging.info("Importing GPG keys from SQL for %s", key)
 	cur.execute ("SELECT data FROM gpg WHERE email = %s", (key))
 	for row in cur.fetchall():
 		import_key(row['data'])
+	cur.close()
 
 def create_primary_key(address):
 	global gpgme
@@ -273,10 +275,11 @@ def delete_expired_subkey(address):
 		gpgme.op_edit(key, KeyEditor("delkey").edit_fnc, out, out)
 		keyagain = check_key(address, whatreturn="key", operation="any", expired=True)
 		if not keyagain:
-			cur = BMMySQL().db.cursor()
+			cur = BMMySQL().conn().cursor()
 			cur.execute ("INSERT INTO gpg (email, fingerprint, private, exp, data) VALUES (%s, %s, %s, FROM_UNIXTIME(%s), %s) ON DUPLICATE KEY UPDATE exp = VALUES(exp), data = VALUES(data)",
 				(key.uids[0].email, key.subkeys[0].fpr, 0, key.subkeys[0].expires, public))
 			rowcount += cur.rowcount
+			cur.close()
 	# if changed but still exists, update
 	# if not exists anymore, delete
 			

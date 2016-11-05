@@ -26,8 +26,7 @@ class GWUser(object):
 			self.load()
 
 	def load(self, bm = None, uid = None, email = None, unalias = False):
-		BMMySQL().ping()
-		cur = BMMySQL().db.cursor(MySQLdb.cursors.DictCursor)
+		cur = BMMySQL().conn().cursor(MySQLdb.cursors.DictCursor)
 		filterwarnings('ignore', category = MySQLdb.Warning)
 		multirow = False
 		self.uid = None
@@ -63,8 +62,7 @@ class GWUser(object):
 		return self.exp < datetime.date.today()
 
 	def add(self, bm, email, postmap = None):
-		BMMySQL().ping()
-		cur = BMMySQL().db.cursor()
+		cur = BMMySQL().conn().cursor()
 		if postmap == None:
 			postmap = pwd.getpwuid(os.getuid())[0]
 		trash, domain = email.split("@")
@@ -84,8 +82,7 @@ class GWUser(object):
 		return uid
 
 	def delete(self):
-		BMMySQL().ping()
-		cur = BMMySQL().db.cursor()
+		cur = BMMySQL().conn().cursor()
 		filterwarnings('ignore', category = MySQLdb.Warning)
 		if self.uid:
 			cur.execute ("DELETE FROM user WHERE uid = %s", (self.uid))
@@ -98,13 +95,12 @@ class GWUser(object):
 		cur.close()
 
 	def update(self, data):
-		BMMySQL().ping()
 		col_names = BMMySQL().filter_column_names("user", data)
-		cur = BMMySQL().db.cursor()
+		cur = BMMySQL().conn().cursor()
 		update_list = []
 		for key in col_names:
 			if data[key] is not None:
-				update_list.append("`" + key + "`" + " = \"" + BMMySQL().db.escape_string(data[key]) + "\"")
+				update_list.append("`" + key + "`" + " = \"" + BMMySQL().conn().escape_string(data[key]) + "\"")
 		if len(update_list) == 0:
 			return False
 		cur.execute("UPDATE user SET " + ", ".join(update_list) + " WHERE bm = %s", (self.bm))
@@ -117,8 +113,7 @@ class GWUser(object):
 			return False
 
 	def setlastrelay(self, lastrelay = None):
-		BMMySQL().ping()
-		cur = BMMySQL().db.cursor()
+		cur = BMMySQL().conn().cursor()
 		filterwarnings('ignore', category = MySQLdb.Warning)
 		if lastrelay == None:
 			cur.execute ("UPDATE user SET lastrelay = UNIX_TIMESTAMP() WHERE uid = %s", (self.uid))
@@ -134,8 +129,7 @@ class GWUser(object):
 		# for example user deleted
 		if self.uid is None:
 			return
-		BMMySQL().ping()
-		cur = BMMySQL().db.cursor()
+		cur = BMMySQL().conn().cursor()
 		filterwarnings('ignore', category = MySQLdb.Warning)
 		if lastackreceived == None:
 			cur.execute ("UPDATE user SET lastackreceived = UNIX_TIMESTAMP() WHERE uid = %s", (self.uid))
@@ -220,8 +214,7 @@ class GWAlias(object):
 	def __init__(self, email = None, alias = None):
 		self.aliases = []
 		self.target = None
-		BMMySQL().ping()
-		cur = BMMySQL().db.cursor(MySQLdb.cursors.DictCursor)
+		cur = BMMySQL().conn().cursor(MySQLdb.cursors.DictCursor)
 		result = False
 		if email:
 			seen = {email: True}
@@ -248,8 +241,7 @@ class GWDomain(object):
 	def __init__(self, domain = None):
 		self.name = None
 		self.active = None
-		BMMySQL().ping()
-		cur = BMMySQL().db.cursor(MySQLdb.cursors.DictCursor)
+		cur = BMMySQL().conn().cursor(MySQLdb.cursors.DictCursor)
 		filterwarnings('ignore', category = MySQLdb.Warning)
 		multirow = False
 		if domain != None:

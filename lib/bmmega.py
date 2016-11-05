@@ -50,8 +50,7 @@ def mega_upload(bm, fname, data):
 		
 	file_id = uploadedfile['f'][0]['h']
 	link = m.get_upload_link(uploadedfile)
-	BMMySQL().ping()
-	cur = BMMySQL().db.cursor()
+	cur = BMMySQL().conn().cursor()
 	cur.execute ("INSERT IGNORE INTO mega (fileid, bm) VALUES (%s, %s)", (
 		file_id, bm))
 	cur.close()

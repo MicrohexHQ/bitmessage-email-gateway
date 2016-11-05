@@ -28,8 +28,7 @@ def create_payment_uri(address, currency, amount, label, message):
 	return base
 
 def payment_exists_domain (domain, payer):
-	BMMySQL().ping()
-	cur = BMMySQL().db.cursor(MySQLdb.cursors.DictCursor)
+	cur = BMMySQL().conn().cursor(MySQLdb.cursors.DictCursor)
 	cur.execute ("SELECT address, amount FROM invoice WHERE type = 0 AND payer = %s AND paid = '0000-00-00 00:00:00'", (payer))
 	result = False
 	for row in cur.fetchall():
@@ -41,8 +40,7 @@ def payment_exists_domain (domain, payer):
 		
 
 def create_invoice_domain (domain, payer):
-	BMMySQL().ping()
-	cur = BMMySQL().db.cursor(MySQLdb.cursors.DictCursor)
+	cur = BMMySQL().conn().cursor(MySQLdb.cursors.DictCursor)
 	filterwarnings('ignore', category = MySQLdb.Warning)
 	cur.execute ("SELECT bm, masterpubkey_btc, offset_btc, feeamount, feecurrency FROM domain WHERE name = %s AND active = 1", (domain))
 	result = False
@@ -79,8 +77,7 @@ def create_invoice_domain (domain, payer):
 
 
 def create_invoice_user (email):
-	BMMySQL().ping()
-	cur = BMMySQL().db.cursor(MySQLdb.cursors.DictCursor)
+	cur = BMMySQL().conn().cursor(MySQLdb.cursors.DictCursor)
 	cur.execute ("SELECT bm, masterpubkey_btc, offset_btc, feeamount, feecurrency FROM user WHERE email = %s AND active = 1", (email))
 	result = False
 	for row in cur.fetchall():
