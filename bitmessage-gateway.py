@@ -289,7 +289,13 @@ def check_bminbox(intcond):
 			if a_message['read'] == 1:
 				BMMessage.deleteStatic(a_message['msgid'])
 				continue
-	
+
+			## check if already processed, maybe from another instance
+			if lib.bminbox.check_message_processed(a_message['msgid']):
+				logging.info('Message %s has already been processed deleting...', a_message['msgid'])
+#				BMMessage.deleteStatic(a_message['msgid'])
+#				continue
+
 			## if the message is unread, load it by ID to trigger the read flag
 			message = json.loads(BMAPI().conn().getInboxMessageByID(a_message['msgid'], False))['inboxMessage'][0]
 	
@@ -598,6 +604,7 @@ def check_bminbox(intcond):
 
 			## remove message
 			BMMessage.deleteStatic(bm_id)
+			lib.bminbox.set_message_processed(bm_id)
 		intcond.wait(BMConfig().get("bmgateway", "bmgateway", "process_interval"))
 	intcond.release()
 	logging.info("Leaving BM inbox checker loop")
