@@ -17,15 +17,15 @@ class BaseBMAPI(object):
 		self._load_address_list()
 
 	def check_connection(self):
-		if not (hasattr(self.thrdata, 'conn') and self.thrdata.conn is not None):
+		if not (hasattr(self.thrdata, 'bm') and self.thrdata.bm is not None):
 			self.connect()
 		if not bool(self.address_list):
 			self._load_address_list()
-		return self.thrdata.conn
+		return self.thrdata.bm
 
 	def connect(self):
 		for bm in BMConfig().get("bmapi"):
-			self.thrdata.conn = xmlrpclib.ServerProxy('http://' +
+			self.thrdata.bm = xmlrpclib.ServerProxy('http://' +
 				BMConfig().get("bmapi", bm, "username") + ':' +
 				BMConfig().get("bmapi", bm, "password") + '@' +
 				BMConfig().get("bmapi", bm, "host") + ':' +
@@ -33,13 +33,13 @@ class BaseBMAPI(object):
 
 			## check if API is responding
 			try:
-				response = self.thrdata.conn.add(2,2)
+				response = self.thrdata.bm.add(2,2)
 				logging.info("Connected to Bitmessage API on %s:%i", BMConfig().get("bmapi", bm, "host"), BMConfig().get("bmapi", bm, "port"))
 				break
 			except:
-				self.thrdata.conn = None
-		if self.thrdata.conn is not None:
-			return self.thrdata.conn
+				self.thrdata.bm = None
+		if self.thrdata.bm is not None:
+			return self.thrdata.bm
 		else:
 			logging.error('Could not connect to Bitmessage API ')
 		return False
@@ -47,7 +47,7 @@ class BaseBMAPI(object):
 	def _load_address_list(self):
 		# does not check for connection, only use internally
 		self.address_list = {}
-		bm_addresses = json.loads(self.thrdata.conn.listAddresses())['addresses']
+		bm_addresses = json.loads(self.thrdata.bm.listAddresses())['addresses']
 		for address in bm_addresses:
 			self.address_list[address['label']] = address['address']
 
@@ -63,7 +63,7 @@ class BaseBMAPI(object):
 		return self.check_connection()
 
 	def disconnect(self):
-		self.thrdata.conn = None
+		self.thrdata.bm = None
 
 class BMAPI(BaseBMAPI):
 	__metaclass__ = lib.singleton.Singleton
