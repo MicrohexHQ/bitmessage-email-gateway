@@ -18,6 +18,7 @@ import email
 import fcntl
 import html2text
 import lib.gpg
+import lib.bminbox
 import lib.bmsignal
 import lib.bmmega
 #import lib.sendingtemplates
@@ -997,9 +998,13 @@ def check_emails(intcond=None):
 
 	## iterate through new messages, each in thread so that crashes do not prevent continuing
 	for k in mdir:
-		atime = os.stat(os.path.join(BMConfig().get("bmgateway", "bmgateway", "mail_folder"), k)).st_atime
-		if atime > time.time() - 10:
+		try:
+			atime = os.stat(os.path.join(BMConfig().get("bmgateway", "bmgateway", "mail_folder"), k)).st_atime
+		except:
 			continue
+		else:
+			if atime > time.time() - 10:
+				continue
 		fhandle = open (os.path.join(BMConfig().get("bmgateway", "bmgateway", "mail_folder"), k), 'r')
 		try:
 			fcntl.flock(fhandle, fcntl.LOCK_EX|fcntl.LOCK_NB)
