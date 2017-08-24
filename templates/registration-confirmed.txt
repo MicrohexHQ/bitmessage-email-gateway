@@ -2,6 +2,9 @@ Subject: Registration Request Accepted
 
 Thank you for your registration request for ${email}. Your account is now set up and ready to use!
 
+NOTE: THIS REGISTRATION IS ONLY FOR USING EMAIL GATEWAY SERVICES. BITMESSAGE
+ITSELF DOESN'T REQUIRE A GATEWAY.
+
 *** Sending Emails ***
 To send emails to the Internet, send a bitmessage to ${relayaddress} with the destination email address in the subject line.
 Kindly note that sending emails requires a paid subscription (1 USD per month),

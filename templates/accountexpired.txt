@@ -2,6 +2,9 @@ Subject: Paid account expired, payment required
 
 It looks like your paid account expired.
 
+NOTE: THIS ONLY AFFECTS EMAIL GATEWAY SERVICES. SENDING MESSAGES TO BITMESSAGE
+USERS DOESN'T REQUIRE A SUBSCRIPTION.
+
 If you would like to continue as a paid account, please send
 
 ${btcamount} bitcoins
